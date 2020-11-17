@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "347124843484",
+    "firebase_url": "https://greentaxi-48ad5.firebaseio.com",
+    "project_id": "greentaxi-48ad5",
+    "storage_bucket": "greentaxi-48ad5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347124843484:android:40f86d925cada1ec4c8519",
+        "android_client_info": {
+          "package_name": "cabrider.show.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347124843484-bbeamcdpr5rv7j7o0v5bs9lhu65iclhf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq18NGeM5Gs4VKmVhY4vrNLIJ8u8zqHV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347124843484-bbeamcdpr5rv7j7o0v5bs9lhu65iclhf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347124843484:android:92940c53a1f32f1f4c8519",
+        "android_client_info": {
+          "package_name": "greencom.show.greentaxi_driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347124843484-bbeamcdpr5rv7j7o0v5bs9lhu65iclhf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq18NGeM5Gs4VKmVhY4vrNLIJ8u8zqHV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347124843484-bbeamcdpr5rv7j7o0v5bs9lhu65iclhf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
