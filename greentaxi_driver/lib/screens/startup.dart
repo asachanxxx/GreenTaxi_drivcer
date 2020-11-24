@@ -123,12 +123,12 @@ class _StartUpScrState extends State<StartUpScr> {
                          children:<Widget> [
                            Padding(
                              padding: const EdgeInsets.only(left: 20,top: 20),
-                             child: Text((currentUser != null) ? 'Welcome back ' + currentUser.fullName: "සුබ දවසක් වේවා!",style: GoogleFonts.roboto(fontSize: 30,color: Colors.white,fontWeight: FontWeight.bold),),
+                             child: Text((currentDriverInfo != null) ? 'Welcome back ' + currentDriverInfo.fullName: "සුබ දවසක් වේවා!",style: GoogleFonts.roboto(fontSize: 30,color: Colors.white,fontWeight: FontWeight.bold),),
                            ),
                            SizedBox(height: 10,),
                            Padding(
                              padding: const EdgeInsets.only(left: 0,top: 0),
-                             child: Text((currentUser != null) ? 'Welcome back ' + currentUser.fullName: "What can we do for you?",style: GoogleFonts.roboto(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold),),
+                             child: Text((currentDriverInfo != null) ? 'Welcome back ' + currentDriverInfo.fullName: "What can we do for you?",style: GoogleFonts.roboto(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold),),
                            )
                          ],
                        )

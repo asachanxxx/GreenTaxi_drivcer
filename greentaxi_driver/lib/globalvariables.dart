@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
@@ -15,8 +17,8 @@ final CameraPosition googlePlex = CameraPosition(
 
 final String operatingCountry = 'LK';
 
-Driver currentUser;
-Driver fullUser;
+// Driver currentUser;
+ Driver fullUser;
 
 User currentFirebaseUser;
 
@@ -27,3 +29,9 @@ StreamSubscription<Position> ridePositionStream;
 //final assetsAudioPlayer = AssetsAudioPlayer();
 
 Position currentPosition;
+
+final assetsAudioPlayer = AssetsAudioPlayer();
+
+DatabaseReference rideRef;
+
+Driver currentDriverInfo;

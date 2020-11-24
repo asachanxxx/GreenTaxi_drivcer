@@ -2,6 +2,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/dataprovider/appdata.dart';
@@ -9,6 +10,7 @@ import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/requestHelper.dart';
 import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/directionDetails.dart';
+import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:provider/provider.dart';
 
 class HelperMethods {
@@ -101,6 +103,24 @@ class HelperMethods {
 
   }
 
+  static void showProgressDialog(context){
 
+    //show please wait dialog
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) => ProgressDialog(status: 'Please wait',),
+    );
+  }
+
+  static void disableHomTabLocationUpdates(){
+    homeTabPositionStream.pause();
+    Geofire.removeLocation(currentFirebaseUser.uid);
+  }
+
+  static void enableHomTabLocationUpdates(){
+    homeTabPositionStream.resume();
+    Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude, currentPosition.longitude);
+  }
 
 }

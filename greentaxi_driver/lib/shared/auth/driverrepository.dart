@@ -8,8 +8,8 @@ class VehicleRepository {
   static String collectiNName = 'vehicles';
   static void registerVehicle(VehicleInfomation newDriver) async {
     try {
-     if (currentUser != null) {
-        DatabaseReference dbRef = FirebaseDatabase.instance.reference().child('drivers/${currentUser.id}/vehicle_details');
+     if (currentDriverInfo != null) {
+        DatabaseReference dbRef = FirebaseDatabase.instance.reference().child('drivers/${currentDriverInfo.id}/vehicle_details');
 
         /*
         * String id;

@@ -43,6 +43,10 @@ dependencies:
   animated_text_kit: ^2.5.4
   flutter_geofire: ^1.0.3
   date_time_picker: ^1.1.0
+  firebase_messaging: ^6.0.16
+  assets_audio_player: ^2.0.1+7
+  toast: ^0.1.5
+
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +68,7 @@ flutter:
     - images/
     - images/icons/
     - images/backgrounds/
-
+    - sounds/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
