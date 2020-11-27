@@ -8,7 +8,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
+import 'package:greentaxi_driver/helpers/mapkithelper.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/widgets/CollectPaymentDialog.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 
@@ -54,6 +56,62 @@ class _NewTripPageState extends State<NewTripPage> {
 
   int durationCounter = 0;
 
+  void getLocationUpdates(){
+    /*
+    * The technology behind this is that if the map kit will calculate the rotations according to the given lat langs . so if we give lat langs too far away
+    * this calculation will not give us a correct heading direction. so fo that we use old position just before we been and set it in to
+    *  -- oldPosition
+    * Variable. so oldPosition always contain before position that we was and that was so short. so the heading will be calculated as the lat lng changes
+    * */
+    LatLng oldPosition = LatLng(0,0);
+
+    /*
+    We use getPositionStream to get the location updates frequently. so every time the stream updated by the Firebase pos will be updated
+    * */
+    ridePositionStream = geoLocator.getPositionStream(locationOptions).listen((Position position) {
+      myPosition = position;
+      currentPosition = position;
+      LatLng pos = LatLng(position.latitude, position.longitude);
+
+      var rotation = MapKitHelper.getMarkerRotation(oldPosition.latitude, oldPosition.longitude, pos.latitude, pos.longitude);
+
+      print('my rotation = $rotation');
+
+
+      Marker movingMaker = Marker(
+          markerId: MarkerId('moving'),
+          position: pos,
+          icon: movingMarkerIcon,
+          rotation: rotation,
+          infoWindow: InfoWindow(title: 'Current Location'),
+
+      );
+
+      setState(() {
+        CameraPosition cp = new CameraPosition(target: pos, zoom: 17);
+        rideMapController.animateCamera(CameraUpdate.newCameraPosition(cp));
+
+        _markers.removeWhere((marker) => marker.markerId.value == 'moving');
+        _markers.add(movingMaker);
+      });
+
+      /*
+      This will always update our current positions to old position so we can calculate the Rotation of the Marker
+      * */
+      oldPosition = pos;
+
+      updateTripDetails();
+
+      Map locationMap = {
+        'latitude': myPosition.latitude.toString(),
+        'longitude': myPosition.longitude.toString(),
+      };
+
+      rideRef.child('driver_location').set(locationMap);
+
+    });
+
+  }
 
 
   void createMarker(){
@@ -107,7 +165,7 @@ class _NewTripPageState extends State<NewTripPage> {
 
               var currentLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
               var pickupLatLng = widget.tripDetails.pickup;
-              await getDirection(currentLatLng, pickupLatLng);
+              await getDirection(currentLatLng, pickupLatLng);  
 
               getLocationUpdates();
 
@@ -142,7 +200,7 @@ class _NewTripPageState extends State<NewTripPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      "Duration" + durationString,
+                      "Duration: " + durationString,
                       style: TextStyle(
                           fontSize: 14,
                           fontFamily: 'Brand-Bold',
@@ -224,6 +282,7 @@ class _NewTripPageState extends State<NewTripPage> {
                             buttonColor = BrandColors.colorAccentPurple;
                           });
 
+                          //Becouse this async we show a progress dialog for user to wai
                           HelperMethods.showProgressDialog(context);
 
                           await getDirection(widget.tripDetails.pickup, widget.tripDetails.destination);
@@ -232,6 +291,7 @@ class _NewTripPageState extends State<NewTripPage> {
                         }
                         else if(status == 'arrived'){
                           status = 'ontrip';
+                          //Update the firebase status
                           rideRef.child('status').set('ontrip');
 
                           setState(() {
@@ -239,6 +299,7 @@ class _NewTripPageState extends State<NewTripPage> {
                             buttonColor = Colors.red[900];
                           });
 
+                          //To count how many minutes spend on a trip
                           startTimer();
                         }
                         else if(status == 'ontrip'){
@@ -283,56 +344,13 @@ class _NewTripPageState extends State<NewTripPage> {
 
   }
 
-  void getLocationUpdates(){
-    print('getLocationUpdates inside NewtripPage');
-
-    LatLng oldPosition = LatLng(0,0);
-
-    ridePositionStream = geoLocator.getPositionStream(locationOptions).listen((Position position) {
-      myPosition = position;
-      currentPosition = position;
-      LatLng pos = LatLng(position.latitude, position.longitude);
-      print('getLocationUpdates inside geoLocator.getPositionStream');
-      // var rotation = MapKitHelper.getMarkerRotation(oldPosition.latitude, oldPosition.longitude, pos.latitude, pos.longitude);
-      //
-      // print('my rotation = $rotation');
-
-
-      // Marker movingMaker = Marker(
-      //     markerId: MarkerId('moving'),
-      //     position: pos,
-      //     icon: movingMarkerIcon,
-      //     rotation: rotation,
-      //     infoWindow: InfoWindow(title: 'Current Location')
-      // );
-
-      setState(() {
-        CameraPosition cp = new CameraPosition(target: pos, zoom: 17);
-        rideMapController.animateCamera(CameraUpdate.newCameraPosition(cp));
-
-        _markers.removeWhere((marker) => marker.markerId.value == 'moving');
-        //_markers.add(movingMaker);
-      });
-
-      oldPosition = pos;
-
-      updateTripDetails();
-
-      Map locationMap = {
-        'latitude': myPosition.latitude.toString(),
-        'longitude': myPosition.longitude.toString(),
-      };
-
-      rideRef.child('driver_location').set(locationMap);
-
-    });
-
-  }
 
   void updateTripDetails() async{
     print('Inside : updateTripDetails');
-    if(!isRequestingDirection){
 
+    //this if statement will track another trip reqest is on the line if so will skip this entire process
+    if(!isRequestingDirection){
+      LatLng destinationLatLng;
       isRequestingDirection = true;
 
       if(myPosition == null){
@@ -340,15 +358,19 @@ class _NewTripPageState extends State<NewTripPage> {
       }
 
       var positionLatLng = LatLng(myPosition.latitude, myPosition.longitude);
-      LatLng destinationLatLng;
+
 
       if(status == 'accepted'){
+        /*
+        * This means we arrived the pickup location
+        * */
         destinationLatLng = widget.tripDetails.pickup;
       }
       else{
         destinationLatLng = widget.tripDetails.destination;
       }
 
+      //This is awaitable for to await till directiond details came back from firestore
       var directionDetails = await HelperMethods.getDirectionDetails(positionLatLng, destinationLatLng);
 
       if(directionDetails != null){
@@ -356,6 +378,7 @@ class _NewTripPageState extends State<NewTripPage> {
         print(directionDetails.durationText);
 
         setState(() {
+          //This will update the duration to go in the screen with direction details realtime
           durationString =  'you have to go: ${directionDetails.durationText}';
         });
       }else{
@@ -499,24 +522,24 @@ class _NewTripPageState extends State<NewTripPage> {
 
     Navigator.pop(context);
 
-    //int fares = HelperMethods.estimateFares(directionDetails, durationCounter);
+    int fares = HelperMethods.estimateFares(directionDetails, durationCounter);
 
-    //rideRef.child('fares').set(fares.toString());
+    rideRef.child('fares').set(fares.toString());
 
     rideRef.child('status').set('ended');
 
     ridePositionStream.cancel();
 
-    // showDialog(
-    //     context: context,
-    //     barrierDismissible: false,
-    //     builder: (BuildContext context) => CollectPayment(
-    //       paymentMethod: widget.tripDetails.paymentMethod,
-    //       fares: fares,
-    //     )
-    // );
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => CollectPayment(
+          paymentMethod: widget.tripDetails.paymentMethod,
+          fares: fares,
+        )
+    );
 
-    //topUpEarnings(fares);
+    topUpEarnings(fares);
   }
 
   void topUpEarnings(int fares){

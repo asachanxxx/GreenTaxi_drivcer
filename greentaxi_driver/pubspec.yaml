@@ -46,6 +46,7 @@ dependencies:
   firebase_messaging: ^6.0.16
   assets_audio_player: ^2.0.1+7
   toast: ^0.1.5
+  maps_toolkit: ^1.1.0+1
 
 
 dev_dependencies:

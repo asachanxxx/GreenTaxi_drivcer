@@ -74,7 +74,7 @@ class HelperMethods {
     return directionDetails;
   }
 
-  static int estimateFares(DirectionDetails details){
+  static int estimateFares(DirectionDetails details, int durationValue){
       /*
       * Fire Calculation
       * ----------------
@@ -88,11 +88,14 @@ class HelperMethods {
       * KM = 0.3
       * Per Minute = 0.2
       * Base Fire = $3
+      *
+      * Side NoteL: the reason we pass durationValue is that the time google api  provide may be not accurate in some cases
+      * becouse the rider may stop for trafic or some other reasons. so we calculate our own time
       * */
     if(details != null) {
-      double baseFire = 3;
-      double distanceFire = (details.distanceValue / 1000) * 0.3;
-      double timeFire = (details.durationValue / 50) * 0.2;
+      double baseFire = 50;
+      double distanceFire = (details.distanceValue / 1000) * 43;
+      double timeFire = (durationValue / 50) * 5;
 
       double totalFire = baseFire + distanceFire + timeFire;
 
@@ -101,6 +104,15 @@ class HelperMethods {
       return 0;
     }
 
+  }
+  static void disableHomTabLocationUpdates(){
+    homeTabPositionStream.pause();
+    Geofire.removeLocation(currentFirebaseUser.uid);
+  }
+
+  static void enableHomTabLocationUpdates(){
+    homeTabPositionStream.resume();
+    Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude, currentPosition.longitude);
   }
 
   static void showProgressDialog(context){
@@ -111,16 +123,6 @@ class HelperMethods {
       context: context,
       builder: (BuildContext context) => ProgressDialog(status: 'Please wait',),
     );
-  }
-
-  static void disableHomTabLocationUpdates(){
-    homeTabPositionStream.pause();
-    Geofire.removeLocation(currentFirebaseUser.uid);
-  }
-
-  static void enableHomTabLocationUpdates(){
-    homeTabPositionStream.resume();
-    Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude, currentPosition.longitude);
   }
 
 }
