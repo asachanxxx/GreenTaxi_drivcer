@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
-import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/helpers/pushnotificationservice.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 import 'package:greentaxi_driver/widgets/AvailabilityButton.dart';
@@ -28,9 +27,6 @@ class _HomeTabState extends State<HomeTab> {
   var locationOptions = LocationOptions(
       accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 4);
 
-  String availabilityTitle = 'GO ONLINE';
-  Color availabilityColor = BrandColors.colorOrange;
-
   bool isAvailable = false;
 
   void getCurrentPosition() async {
@@ -47,13 +43,11 @@ class _HomeTabState extends State<HomeTab> {
         .reference()
         .child('drivers/${currentFirebaseUser.uid}');
 
-    driverRef.once().then((DataSnapshot snapshot){
-
-      if(snapshot.value != null){
+    driverRef.once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
         print(currentDriverInfo.fullName);
       }
-
     });
 
     PushNotificationService pushNotificationService = PushNotificationService();

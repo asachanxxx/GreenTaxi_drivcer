@@ -15,6 +15,18 @@ class PushNotificationService {
 
   final FirebaseMessaging fcm = FirebaseMessaging();
 
+  Future<String> getToken() async{
+
+    String token = await fcm.getToken();
+    print('token: $token');
+
+    DatabaseReference tokenRef = FirebaseDatabase.instance.reference().child('drivers/${currentFirebaseUser.uid}/token');
+    tokenRef.set(token);
+
+    fcm.subscribeToTopic('alldrivers');
+    fcm.subscribeToTopic('allusers');
+
+  }
 
   Future initialize(context) async {
     if (Platform.isIOS) {
@@ -62,9 +74,10 @@ class PushNotificationService {
 
     DatabaseReference rideRef = FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
     rideRef.once().then((DataSnapshot snapshot){
+
       Navigator.pop(context);
+
       if(snapshot.value != null){
-        print('Inside the Fetch $rideID');
 
         assetsAudioPlayer.open(
           Audio('sounds/alert.mp3'),
@@ -82,9 +95,8 @@ class PushNotificationService {
         String riderName = snapshot.value['rider_name'];
         String riderPhone = snapshot.value['rider_phone'];
 
-        print('pickupAddress : $pickupAddress');
-
         TripDetails tripDetails = TripDetails();
+
         tripDetails.rideID = rideID;
         tripDetails.pickupAddress = pickupAddress;
         tripDetails.destinationAddress = destinationAddress;
@@ -105,19 +117,6 @@ class PushNotificationService {
     });
   }
 
-
-  Future<String> getToken() async{
-
-    String token = await fcm.getToken();
-    print('token ====================>: $token');
-
-    DatabaseReference tokenRef = FirebaseDatabase.instance.reference().child('drivers/${currentFirebaseUser.uid}/token');
-    tokenRef.set(token);
-
-    fcm.subscribeToTopic('alldrivers');
-    fcm.subscribeToTopic('allusers');
-
-  }
 
 
   String getRideID(Map<String, dynamic> message){
