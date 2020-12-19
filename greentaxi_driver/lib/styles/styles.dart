@@ -35,7 +35,7 @@ final f_font_20_Bold_Black100 = GoogleFonts.roboto(fontSize: 20,fontWeight: Font
 final f_font_20_Bold_Dim = GoogleFonts.roboto(fontSize: 20,fontWeight: FontWeight.bold,color: BrandColors.colorDimText);
 final f_font_text_Input = GoogleFonts.roboto(color: Colors.black87,fontSize: 17);
 
-final f_font_tabtitleColor = GoogleFonts.roboto(fontSize: 14,fontWeight: FontWeight.bold,color: BrandColors.colorPrimary);
+final f_font_tabtitleColor = GoogleFonts.roboto(fontSize: 14,fontWeight: FontWeight.normal,color: BrandColors.colorPrimary);
 
 ///Decorations
 
@@ -45,13 +45,27 @@ final boxDecoDefault = BoxDecoration(color: Colors.white,
 );
 
 
+final boxDecoDefualt = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(10),
+    border: Border.all(width: 1.0,
+        color: Colors.black26),
+    boxShadow: [
+      BoxShadow(color: Colors.black26,
+          blurRadius: 5.0,
+          spreadRadius: 0.5,
+          offset: Offset(0.2, 0.2))
+    ]
+);
+
+
 final boxDecoLogin = BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(50),
     border: Border.all(width: 1.0,
         color: BrandColors.colorLightGrayFair),
     boxShadow: [
-      BoxShadow(color: Color.fromARGB(100, 54, 57, 232),
+      BoxShadow(color: Colors.white,
           blurRadius: 15.0,
           spreadRadius: 2,
           offset: Offset(0.7, 0.7))
@@ -95,9 +109,63 @@ InputDecoration getInputDecorationLogin(String labelText, Icon ico) {
   );
 }
 
+
+InputDecoration getInputDecorationRegister(String labelText, Icon ico) {
+  return InputDecoration(
+    contentPadding: EdgeInsets.all(15.0),
+    labelText: labelText,
+    labelStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 16),
+    hintStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 14),
+    prefixIcon: ico,
+    border: new OutlineInputBorder(
+      borderRadius: const BorderRadius.all(
+        Radius.circular(7.0),
+      ),
+      borderSide: new BorderSide(
+        color: BrandColors.colorPink,
+        width: 1.0,
+      ),
+    ),
+  );
+}
+
 final c_Icon_main = Colors.black38;
 final c_Icon_button_bacl = Color(0xff5a5fff);
 final f_font_main_button = GoogleFonts.roboto(
 fontSize: 17, color:c_Icon_main,fontWeight: FontWeight.normal);
 
 final f_font_Taxi_Button = GoogleFonts.roboto(fontSize: 17,color: Colors.white, fontWeight: FontWeight.normal);
+
+
+final kHintTextStyle = TextStyle(
+  color: Colors.black87,
+  fontFamily: 'OpenSans',
+);
+
+final kHintTextStyle2 = TextStyle(
+  color: Colors.black54,
+  fontFamily: 'OpenSans',
+);
+
+final kLabelStyle = TextStyle(
+  color: Colors.black,
+  fontWeight: FontWeight.normal,
+  fontFamily: 'OpenSans',
+);
+
+final kLabelStyle_Black = GoogleFonts.roboto(
+    fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xfff57f17));
+final kLabelStyle_Ceyan = GoogleFonts.roboto(
+    fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xff0277bd));
+
+final kBoxDecorationStyle = BoxDecoration(
+  color: Color(0xFFFFFFFF),
+  borderRadius: BorderRadius.circular(10.0),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black54,
+      blurRadius: 6.0,
+      offset: Offset(0, 2),
+    ),
+  ],
+);

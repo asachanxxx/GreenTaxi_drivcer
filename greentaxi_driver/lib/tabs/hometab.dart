@@ -6,18 +6,44 @@ import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
+import 'package:greentaxi_driver/dataprovider/appdata.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/pushnotificationservice.dart';
+import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
+import 'package:greentaxi_driver/screens/login.dart';
+import 'package:greentaxi_driver/shared/auth/userrepo.dart';
+import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/AvailabilityButton.dart';
 import 'package:greentaxi_driver/widgets/ConfirmSheet.dart';
+import 'package:greentaxi_driver/widgets/TaxiButton.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeTab extends StatefulWidget {
   @override
   _HomeTabState createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> {
+class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch(state){
+      case AppLifecycleState.paused:
+        print('paused state');
+        break;
+      case AppLifecycleState.resumed:
+        print('resumed state');
+        break;
+      case AppLifecycleState.inactive:
+        print('inactive state');
+        break;
+    }
+  }
+
+
   GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
 
@@ -34,7 +60,11 @@ class _HomeTabState extends State<HomeTab> {
         desiredAccuracy: LocationAccuracy.bestForNavigation);
     currentPosition = position;
     LatLng pos = LatLng(position.latitude, position.longitude);
-    mapController.animateCamera(CameraUpdate.newLatLng(pos));
+
+
+
+    driverInitialPos = pos;
+
   }
 
   void getCurrentDriverInfo() async {
@@ -46,13 +76,13 @@ class _HomeTabState extends State<HomeTab> {
     driverRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
+        print("Came");
         print(currentDriverInfo.fullName);
       }
     });
 
     PushNotificationService pushNotificationService = PushNotificationService();
-
-    pushNotificationService.initialize(context);
+    pushNotificationService.initialize(context,driverInitialPos);
     pushNotificationService.getToken();
 
     //HelperMethods.getHistoryInfo(context);
@@ -87,7 +117,7 @@ class _HomeTabState extends State<HomeTab> {
         Container(
           height: 135,
           width: double.infinity,
-          color: BrandColors.colorPrimary,
+          decoration: boxDecoDefualt,
         ),
         Positioned(
           top: 60,
@@ -116,7 +146,7 @@ class _HomeTabState extends State<HomeTab> {
                           getLocationUpdates();
                           Navigator.pop(context);
                           setState(() {
-                            availabilityColor = BrandColors.colorGreen;
+                            availabilityColor = Colors.greenAccent;
                             availabilityTitle = 'GO OFFLINE';
                             isAvailable = true;
                           });
@@ -124,7 +154,7 @@ class _HomeTabState extends State<HomeTab> {
                           GoOffline();
                           Navigator.pop(context);
                           setState(() {
-                            availabilityColor = BrandColors.colorOrange;
+                            availabilityColor = Colors.redAccent;
                             availabilityTitle = 'GO ONLINE';
                             isAvailable = false;
                           });
@@ -139,6 +169,17 @@ class _HomeTabState extends State<HomeTab> {
         )
       ],
     );
+  }
+
+  void _launchMapsUrl(LatLng _originLatLng, LatLng _destinationLatLng) async {
+    final url =
+        'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
+    if (await canLaunch(url)) {
+      print("Launching map.... $url");
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   void GoOnline() {
@@ -157,7 +198,9 @@ class _HomeTabState extends State<HomeTab> {
         .child('drivers/${currentFirebaseUser.uid}/newtrip');
     tripRequestRef.set('waiting');
 
-    tripRequestRef.onValue.listen((event) {});
+    tripRequestRef.onValue.listen((event) {
+      print('tripRequestRef.onValue.listen-> ${event}');
+    });
   }
 
   /*

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 
 class ProgressDialog extends StatelessWidget {
@@ -28,7 +29,7 @@ class ProgressDialog extends StatelessWidget {
 
               CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(BrandColors.colorAccent),),
               SizedBox(width: 25.0,),
-              Text(status, style: TextStyle(fontSize: 15),),
+              Text(status, style: GoogleFonts.roboto(fontSize: 15),),
             ],
           ),
         ),

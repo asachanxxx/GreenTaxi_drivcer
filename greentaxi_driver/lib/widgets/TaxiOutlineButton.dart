@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 
 class TaxiOutlineButton extends StatelessWidget {
@@ -20,10 +21,10 @@ class TaxiOutlineButton extends StatelessWidget {
         color: color,
         textColor: color,
         child: Container(
-          height: 50.0,
+          height: 40.0,
           child: Center(
             child: Text(title,
-                style: TextStyle(fontSize: 15.0, fontFamily: 'Brand-Bold', color: BrandColors.colorText)),
+                style: GoogleFonts.roboto(fontSize: 15.0, color: BrandColors.colorText)),
           ),
         )
     );

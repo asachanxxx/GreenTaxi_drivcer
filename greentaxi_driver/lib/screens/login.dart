@@ -58,20 +58,9 @@ class _LoginPageState extends State<LoginPage> {
 
     });
 
+
+
     User user = userCredential.user;
-
-    // final FirebaseUser user = (await _auth.signInWithEmailAndPassword(
-    //   email: emailController.text,
-    //   password: passwordController.text,
-    // ).catchError((ex){
-    //
-    //   //check error and display message
-    //   Navigator.pop(context);
-    //   PlatformException thisEx = ex;
-    //   showSnackBar(thisEx.message);
-    //
-    // })).user;
-
     if(user != null){
       // verify login
       DatabaseReference userRef = FirebaseDatabase.instance.reference().child('drivers/${user.uid}');
@@ -88,87 +77,116 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: scaffoldKey,
-        body: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage("images/backgrounds/pagemain.jpg"),
-                  fit: BoxFit.cover)),
-          child: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(top: 100, left: 20, right: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white
-                ),
-                  child: SingleChildScrollView(
-                    child: Column(
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget> [
+                  Container(
+                    child: Stack(
                       children: <Widget>[
-                        SizedBox(height:50,),
-                        Text('Log In',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(
-                              fontSize: 40, fontWeight: FontWeight.bold),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Column(
-                            children: <Widget>[
-                              TextField(
-                                controller: emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: getInputDecorationLogin('Email address',Icon(Icons.email)),
-                                style: f_font_text_Input,
-                              ),
-                              SizedBox(height: 10,),
-                              TextField(
-                                controller: passwordController,
-                                keyboardType: TextInputType.visiblePassword,
-                                decoration: getInputDecorationLogin('Password',Icon(Icons.security)),
-                                style: f_font_text_Input,
-                              ),
-                              SizedBox(height: 40,),
-                              TaxiButton(
-                                title: 'LOGIN',
-                                color: BrandColors.colorAccentPurple,
-                                onPress: () async {
-                                  //check network availability
-                                  var connectivityResult = await Connectivity().checkConnectivity();
-                                  if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-                                    showSnackBar('No internet connectivity');
-                                    return;
-                                  }
-
-                                  if(!emailController.text.contains('@')){
-                                    showSnackBar('Please enter a valid email address');
-                                    return;
-                                  }
-
-                                  if(passwordController.text.length < 8){
-                                    showSnackBar('Please enter a valid password');
-                                    return;
-                                  }
-
-                                  login();
-
-                                },
-                              ),
-
-                            ],
+                        Container(
+                          padding: EdgeInsets.fromLTRB(15.0, 30.0, 0.0, 0.0),
+                          child: Text(
+                            'taXy',
+                            style:
+                            GoogleFonts.lobster(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
                           ),
                         ),
-
-                        FlatButton(
-                            onPressed: (){
-                              Navigator.pushNamedAndRemoveUntil(context, RiderRegister.Id, (route) => false);
-                            },
-                            child: Text('Don\'t have an account, sign up here' ,style: f_font_16_Normal_Black100,)
-                        ),
-
-                        SizedBox(height: 160,),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(140.0, 40.0, 0.0, 0.0),
+                          child: Text(
+                            '.',
+                            style: TextStyle(
+                                fontSize: 80.0,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFff6f00)),
+                          ),
+                        )
                       ],
                     ),
                   ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white
+                    ),
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(height:10,),
+                          Text('Log In',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Column(
+                              children: <Widget>[
+                                TextField(
+                                  controller: emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: getInputDecorationLogin('Email address',Icon(Icons.email)),
+                                  style: f_font_text_Input,
+                                ),
+                                SizedBox(height: 10,),
+                                TextField(
+                                  controller: passwordController,
+                                  obscureText: true,
+                                  keyboardType: TextInputType.visiblePassword,
+                                  decoration: getInputDecorationLogin('Password',Icon(Icons.security)),
+                                  style: f_font_text_Input,
+                                ),
+                                SizedBox(height: 40,),
+                                TaxiButton(
+                                  title: 'LOGIN',
+                                  color: Color(0xFFff6f00),
+                                  onPress: () async {
+                                    //check network availability
+                                    var connectivityResult = await Connectivity().checkConnectivity();
+                                    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
+                                      showSnackBar('No internet connectivity');
+                                      return;
+                                    }
 
+                                    if(!emailController.text.contains('@')){
+                                      showSnackBar('Please enter a valid email address');
+                                      return;
+                                    }
+
+                                    if(passwordController.text.length < 8){
+                                      showSnackBar('Please enter a valid password');
+                                      return;
+                                    }
+
+                                    login();
+
+                                  },
+                                ),
+
+                              ],
+                            ),
+                          ),
+
+                          Row(
+                            // crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
+                            children:<Widget> [
+                              Text('Don\'t have an account,' ,style: f_font_16_Normal_Black100,),
+                              FlatButton(
+                                  onPressed: (){
+                                    Navigator.pushNamedAndRemoveUntil(context, RiderRegister.Id, (route) => false);
+                                  },
+                                  child: Text('Sign Up here' ,style: GoogleFonts.roboto(fontSize: 17,fontWeight: FontWeight.bold, color:  Color(0xFFff6f00)),)
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 160,),
+                        ],
+                      ),
+
+                  ),
+                ],
               ),
             ),
           ),

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
+import 'package:greentaxi_driver/dataprovider/SystemConfigs.dart';
+import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 
 String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
@@ -38,4 +40,8 @@ DatabaseReference rideRef;
 Driver currentDriverInfo;
 
 String availabilityTitle = 'GO ONLINE';
-Color availabilityColor = BrandColors.colorOrange;
+Color availabilityColor = Colors.redAccent;
+
+SystemSettings systemSettings;
+
+LatLng driverInitialPos;

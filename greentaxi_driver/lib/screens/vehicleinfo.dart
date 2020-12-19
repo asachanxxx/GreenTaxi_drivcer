@@ -14,7 +14,7 @@ import 'package:greentaxi_driver/shared/auth/driverrepository.dart';
 import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
-import 'package:date_time_picker/date_time_picker.dart';
+//import 'package:date_time_picker/date_time_picker.dart';
 import 'package:intl/intl.dart';
 
 class VehicleInfo extends StatefulWidget {
@@ -184,26 +184,26 @@ class _StartUpScrState extends State<VehicleInfo> {
                               SizedBox(height: 10,),
                               //Text("${selectedDate.toLocal()}".split(' ')[0]),
 
-                              DateTimePicker(
-                                type: DateTimePickerType.date,
-                                dateMask: 'd MMM, yyyy',
-                                initialValue: DateTime.now().toString(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2100),
-                                icon: Icon(Icons.event),
-                                dateLabelText: 'Insurance Expire',
-                                timeLabelText: "Hour",
-                                onChanged: (val) {
-                                  selectedDate = new DateFormat('yyyy-MM-dd').parse(val).toLocal();
-                                  print(selectedDate);
-                                },
-                                validator: (val) {
-                                  print(val);
-                                  return null;
-                                },
-                                onSaved: (val){
-                                },
-                              ),
+                              // DateTimePicker(
+                              //   type: DateTimePickerType.date,
+                              //   dateMask: 'd MMM, yyyy',
+                              //   initialValue: DateTime.now().toString(),
+                              //   firstDate: DateTime(2000),
+                              //   lastDate: DateTime(2100),
+                              //   icon: Icon(Icons.event),
+                              //   dateLabelText: 'Insurance Expire',
+                              //   timeLabelText: "Hour",
+                              //   onChanged: (val) {
+                              //     selectedDate = new DateFormat('yyyy-MM-dd').parse(val).toLocal();
+                              //     print(selectedDate);
+                              //   },
+                              //   validator: (val) {
+                              //     print(val);
+                              //     return null;
+                              //   },
+                              //   onSaved: (val){
+                              //   },
+                              // ),
                               SizedBox(height: 30,),
                               TaxiButton(
                                 title: "Register",

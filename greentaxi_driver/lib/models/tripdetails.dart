@@ -5,6 +5,7 @@ class TripDetails {
   String pickupAddress;
   LatLng pickup;
   LatLng destination;
+  LatLng driverLocation;
   String rideID;
   String paymentMethod;
   String riderName;

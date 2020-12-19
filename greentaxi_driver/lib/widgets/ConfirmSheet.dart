@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 import 'package:greentaxi_driver/widgets/TaxiOutlineButton.dart';
@@ -33,14 +34,11 @@ class ConfirmSheet extends StatelessWidget {
       child: Padding(
         padding:  EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         child: Column(
-          children: <Widget>[
-
-            SizedBox(height:  10,),
-
+          children: <Widget>[SizedBox(height:  10,),
            Text(
              title,
              textAlign: TextAlign.center,
-             style: TextStyle(fontSize: 22, fontFamily: 'Brand-Bold', color: BrandColors.colorText),
+             style: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.bold, color: BrandColors.colorText),
            ),
 
             SizedBox(height: 20,),
@@ -48,7 +46,7 @@ class ConfirmSheet extends StatelessWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(color: BrandColors.colorTextLight),
+              style: GoogleFonts.roboto(color: BrandColors.colorTextLight),
             ),
 
             SizedBox(height: 24,),
@@ -60,7 +58,7 @@ class ConfirmSheet extends StatelessWidget {
                   child: Container(
                     child: TaxiOutlineButton(
                       title: 'BACK',
-                      color: BrandColors.colorLightGrayFair,
+                      color: Colors.black45,
                       onPressed: (){
                         Navigator.pop(context);
                       },

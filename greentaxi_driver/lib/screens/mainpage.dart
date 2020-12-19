@@ -1,7 +1,9 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
+import 'package:greentaxi_driver/tabs/customertab.dart';
 import 'package:greentaxi_driver/tabs/earningstab.dart';
 import 'package:greentaxi_driver/tabs/hometab.dart';
 import 'package:greentaxi_driver/tabs/profiletab.dart';
@@ -13,7 +15,7 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin{
+class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin,WidgetsBindingObserver {
 
   TabController tabController;
   int selecetdIndex = 0;
@@ -29,7 +31,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(length: 4, vsync: this);
+    tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -38,6 +40,30 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     tabController.dispose();
     super.dispose();
   }
+
+  //AppLifecycleState _notification;
+
+
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch(state){
+      case AppLifecycleState.paused:
+        print('paused state');
+        break;
+      case AppLifecycleState.resumed:
+        print('resumed state');
+        break;
+      case AppLifecycleState.inactive:
+        print('inactive state');
+        break;
+      case AppLifecycleState.detached:
+        // TODO: Handle this case.
+        break;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,27 +75,33 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
         children: <Widget>[
           HomeTab(),
           EarningsTab(),
-          RatingsTab(),
+          CustomerTab(),
           ProfileTab(),
+          RatingsTab(),
+
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home,color: Colors.black),
+            icon: Icon(Icons.home,color: Colors.black54),
             title: Text('Home', style: f_font_tabtitleColor,),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.credit_card,color: Colors.black),
+            icon: Icon(Icons.credit_card,color: Colors.black54),
             title: Text('Earnings', style: f_font_tabtitleColor),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.star,color: Colors.black,),
-            title: Text('Ratings', style: f_font_tabtitleColor),
+            icon: Icon(Icons.star,color: Colors.black54,),
+            title: Text('Customers', style: f_font_tabtitleColor),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person,color: Colors.black),
+            icon: Icon(Icons.person,color: Colors.black54),
             title: Text('Account', style: f_font_tabtitleColor),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person,color: Colors.black54),
+            title: Text('Ratings', style: f_font_tabtitleColor),
           ),
         ],
         currentIndex: selecetdIndex,

@@ -1,6 +1,7 @@
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
@@ -11,7 +12,8 @@ import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 import 'package:greentaxi_driver/widgets/TaxiOutlineButton.dart';
 import 'package:toast/toast.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationDialog extends StatelessWidget {
   final TripDetails tripDetails;
@@ -46,7 +48,7 @@ class NotificationDialog extends StatelessWidget {
             ),
             Text(
               'NEW TRIP REQUEST',
-              style: TextStyle(fontFamily: 'Brand-Bold', fontSize: 18),
+              style: GoogleFonts.roboto(fontSize: 18),
             ),
             SizedBox(
               height: 30.0,
@@ -70,7 +72,7 @@ class NotificationDialog extends StatelessWidget {
                           child: Container(
                               child: Text(
                                 tripDetails.pickupAddress,
-                                style: TextStyle(fontSize: 18),
+                                style: GoogleFonts.roboto(fontSize: 18),
                               )))
                     ],
                   ),
@@ -92,7 +94,7 @@ class NotificationDialog extends StatelessWidget {
                           child: Container(
                               child: Text(
                                 tripDetails.destinationAddress,
-                                style: TextStyle(fontSize: 18),
+                                style: GoogleFonts.roboto(fontSize: 18),
                               )))
                     ],
                   ),
@@ -179,7 +181,7 @@ class NotificationDialog extends StatelessWidget {
       if (thisRideID == tripDetails.rideID) {
         newRideRef.set('accepted');
         ///This will remove the incoming data stream to him cus he is on a trip
-        //HelperMethods.disableHomTabLocationUpdates();
+        HelperMethods.disableHomTabLocationUpdates();
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -197,6 +199,20 @@ class NotificationDialog extends StatelessWidget {
         Toast.show("Ride not found 2", context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
+
+
+
     });
   }
+
+  void _launchMapsUrl( LatLng _originLatLng,  LatLng _destinationLatLng)   async {
+    final url = 'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
+    if (await canLaunch(url)) {
+      print("Launching map.... $url");
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
 }

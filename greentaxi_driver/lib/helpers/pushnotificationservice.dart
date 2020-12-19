@@ -6,14 +6,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:greentaxi_driver/dataprovider/appdata.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
 import 'package:greentaxi_driver/widgets/NotificationDialog.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
+import 'package:provider/provider.dart';
 
 class PushNotificationService {
 
   final FirebaseMessaging fcm = FirebaseMessaging();
+
+
 
   Future<String> getToken() async{
 
@@ -28,20 +32,23 @@ class PushNotificationService {
 
   }
 
-  Future initialize(context) async {
+  Future initialize(context,LatLng pos) async {
+
+
     if (Platform.isIOS) {
       fcm.requestNotificationPermissions(IosNotificationSettings());
     }
+    print("Inside FCM");
+
 
     fcm.configure(
-
       onMessage: (Map<String, dynamic> message) async {
         print('onMessage : $message');
         if(Platform.isAndroid){
           print('onMessage : ${message['data']['ride_id']}');
         }
         getRideID(message);
-        fetchRideInfo(getRideID(message), context);
+        fetchRideInfo(getRideID(message), context,pos);
       },
       onLaunch: (Map<String, dynamic> message) async {
         print('onLaunch : $message');
@@ -49,7 +56,7 @@ class PushNotificationService {
           print('onLaunch : ${message['data']['ride_id']}');
         }
 
-        fetchRideInfo(getRideID(message), context);
+        fetchRideInfo(getRideID(message), context,pos);
       },
       onResume: (Map<String, dynamic> message) async {
         print('onResume : $message');
@@ -57,14 +64,13 @@ class PushNotificationService {
           print('onLaunch : ${message['data']['ride_id']}');
         }
         getRideID(message);
-        fetchRideInfo(getRideID(message), context);
+        fetchRideInfo(getRideID(message), context,pos);
       },
 
     );
   }
 
-  void fetchRideInfo(String rideID, context){
-
+  void fetchRideInfo(String rideID, context,LatLng pos){
     //show please wait dialog
     showDialog(
       barrierDismissible: false,
@@ -90,6 +96,11 @@ class PushNotificationService {
 
         double destinationLat = double.parse(snapshot.value['destination']['latitude'].toString());
         double destinationLng = double.parse(snapshot.value['destination']['longitude'].toString());
+
+        // double driverLat = double.parse(snapshot.value['driver_location']['latitude'].toString());
+        // double driverLng = double.parse(snapshot.value['driver_location']['longitude'].toString());
+
+
         String destinationAddress = snapshot.value['destination_address'];
         String paymentMethod = snapshot.value['payment_method'];
         String riderName = snapshot.value['rider_name'];
@@ -102,6 +113,7 @@ class PushNotificationService {
         tripDetails.destinationAddress = destinationAddress;
         tripDetails.pickup = LatLng(pickupLat, pickupLng);
         tripDetails.destination = LatLng(destinationLat, destinationLng);
+        //tripDetails.driverLocation = LatLng(pos.latitude, pos.longitude);
         tripDetails.paymentMethod = paymentMethod;
         tripDetails.riderName = riderName;
         tripDetails.riderPhone = riderPhone;
