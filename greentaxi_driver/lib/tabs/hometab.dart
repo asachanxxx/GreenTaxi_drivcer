@@ -184,15 +184,17 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
 
   void GoOnline() {
     Geofire.initialize('driversAvailable');
+    print("Geofire Started");
     Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude,
         currentPosition.longitude);
-
+    print("Location set");
     print('GoOnline : currentFirebaseUser.uid-> ' +
         currentFirebaseUser.uid +
         ' currentPosition.latitude-> ' +
         currentPosition.latitude.toString() +
         ' currentPosition.longitude-> ' +
         currentPosition.longitude.toString());
+
     tripRequestRef = FirebaseDatabase.instance
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/newtrip');

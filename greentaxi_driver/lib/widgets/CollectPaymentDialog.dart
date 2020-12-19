@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
+import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 
@@ -18,8 +20,7 @@ class CollectPayment extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.all(4.0),
         width: double.infinity,
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(4)),
+        decoration: boxDecoOrange,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -35,8 +36,8 @@ class CollectPayment extends StatelessWidget {
               height: 16.0,
             ),
             Text(
-              '\$$fares',
-              style: TextStyle(fontFamily: 'Brand-Bold', fontSize: 50),
+              'LKR $fares.00',
+              style: GoogleFonts.roboto(fontSize: 35, color: Color(0xFFff6f00)),
             ),
             SizedBox(
               height: 16,
@@ -46,6 +47,7 @@ class CollectPayment extends StatelessWidget {
               child: Text(
                 'Amount above is the total fares to be charged to the rider',
                 textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(color: Color(0xFF000000)),
               ),
             ),
             SizedBox(
@@ -55,8 +57,8 @@ class CollectPayment extends StatelessWidget {
               width: 230,
               child: TaxiButton(
                 title: (paymentMethod == 'cash') ? 'COLLECT CASH' : 'CONFIRM',
-                color: BrandColors.colorGreen,
-                onPress : () {
+                color: Color(0xfff57f17),
+                onPress: () {
                   Navigator.pop(context);
                   Navigator.pop(context);
 

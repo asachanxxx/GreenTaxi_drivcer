@@ -16,9 +16,7 @@ import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class NewTripPage extends StatefulWidget {
-
   final TripDetails tripDetails;
   NewTripPage({this.tripDetails});
   @override
@@ -58,7 +56,6 @@ class _NewTripPageState extends State<NewTripPage> {
   Timer timer;
 
   int durationCounter = 0;
-
 
   void getLocationUpdates() {
     /*
@@ -109,8 +106,8 @@ class _NewTripPageState extends State<NewTripPage> {
       updateTripDetails();
 
       Map locationMap = {
-        'myPosition latitude': myPosition.latitude.toString(),
-        'myPosition longitude': myPosition.longitude.toString(),
+        'latitude': myPosition.latitude.toString(),
+        'longitude': myPosition.longitude.toString(),
       };
 
       rideRef.child('driver_location').set(locationMap);
@@ -205,8 +202,7 @@ class _NewTripPageState extends State<NewTripPage> {
                     Text(
                       "Duration: " + durationString,
                       style: GoogleFonts.roboto(
-                          fontSize: 14,
-                          color: BrandColors.colorAccentPurple),
+                          fontSize: 14, color: BrandColors.colorAccentPurple),
                     ),
                     SizedBox(
                       height: 5,
@@ -216,8 +212,7 @@ class _NewTripPageState extends State<NewTripPage> {
                       children: <Widget>[
                         Text(
                           "${widget.tripDetails.riderName} On ${widget.tripDetails.riderPhone}",
-                          style:
-                          GoogleFonts.roboto(fontSize: 22),
+                          style: GoogleFonts.roboto(fontSize: 22),
                         ),
                         Padding(
                           padding: EdgeInsets.only(right: 10),
@@ -281,7 +276,6 @@ class _NewTripPageState extends State<NewTripPage> {
                       color: buttonColor,
                       onPress: () async {
                         if (status == 'init') {
-
                           status = 'accepted';
                           rideRef.child('status').set(('arrived'));
 
@@ -289,14 +283,15 @@ class _NewTripPageState extends State<NewTripPage> {
                             buttonTitle = 'ARRIVED';
                             buttonColor = BrandColors.colorAccentPurple;
                           });
-                          print("LatLng pos.longitude ${currentPosition.longitude}");
-                          print("LatLng pos.latitude ${currentPosition.latitude}");
-                          var driverLocation =  LatLng(currentPosition.latitude,currentPosition.longitude);
-                          _launchMapsUrl(driverLocation,widget.tripDetails.pickup);
-
-                        }
-                        else if (status == 'accepted') {
-
+                          print(
+                              "LatLng pos.longitude ${currentPosition.longitude}");
+                          print(
+                              "LatLng pos.latitude ${currentPosition.latitude}");
+                          var driverLocation = LatLng(currentPosition.latitude,
+                              currentPosition.longitude);
+                          _launchMapsUrl(
+                              driverLocation, widget.tripDetails.pickup);
+                        } else if (status == 'accepted') {
                           status = 'arrived';
                           rideRef.child('status').set(('arrived'));
 
@@ -312,12 +307,9 @@ class _NewTripPageState extends State<NewTripPage> {
                               widget.tripDetails.destination);
 
                           Navigator.pop(context);
-
-
-
                         } else if (status == 'arrived') {
-
-                          _launchMapsUrl(widget.tripDetails.pickup,widget.tripDetails.destination);
+                          _launchMapsUrl(widget.tripDetails.pickup,
+                              widget.tripDetails.destination);
 
                           status = 'ontrip';
                           //Update the firebase status
@@ -369,8 +361,6 @@ class _NewTripPageState extends State<NewTripPage> {
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/history/$rideID');
     historyRef.set(true);
-
-
   }
 
   void updateTripDetails() async {
@@ -580,8 +570,9 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
-  void _launchMapsUrl( LatLng _originLatLng,  LatLng _destinationLatLng)   async {
-    final url = 'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
+  void _launchMapsUrl(LatLng _originLatLng, LatLng _destinationLatLng) async {
+    final url =
+        'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
     if (await canLaunch(url)) {
       print("Launching map.... $url");
       await launch(url);
@@ -589,6 +580,4 @@ class _NewTripPageState extends State<NewTripPage> {
       throw 'Could not launch $url';
     }
   }
-
-
 }
