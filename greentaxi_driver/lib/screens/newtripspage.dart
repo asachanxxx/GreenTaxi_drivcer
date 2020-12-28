@@ -17,6 +17,7 @@ import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NewTripPage extends StatefulWidget {
+  static const String Id = 'newtrippage';
   final TripDetails tripDetails;
   NewTripPage({this.tripDetails});
   @override
@@ -109,7 +110,11 @@ class _NewTripPageState extends State<NewTripPage> {
         'latitude': myPosition.latitude.toString(),
         'longitude': myPosition.longitude.toString(),
       };
+      print("Updating driver_location $locationMap");
 
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child("rideRequest/${widget.tripDetails.rideID}");
       rideRef.child('driver_location').set(locationMap);
     });
   }
@@ -133,6 +138,7 @@ class _NewTripPageState extends State<NewTripPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    //print("NewTripPage  tripDetails ${tripDetails.rideID}");
     acceptTrip();
   }
 
@@ -167,7 +173,7 @@ class _NewTripPageState extends State<NewTripPage> {
                   LatLng(currentPosition.latitude, currentPosition.longitude);
               var pickupLatLng = widget.tripDetails.pickup;
               await getDirection(currentLatLng, pickupLatLng);
-
+              print('my rotation getLocationUpdates()');
               getLocationUpdates();
             },
           ),
@@ -277,7 +283,7 @@ class _NewTripPageState extends State<NewTripPage> {
                       onPress: () async {
                         if (status == 'init') {
                           status = 'accepted';
-                          rideRef.child('status').set(('arrived'));
+                          rideRef.child('status').set(('accepted'));
 
                           setState(() {
                             buttonTitle = 'ARRIVED';
@@ -337,30 +343,66 @@ class _NewTripPageState extends State<NewTripPage> {
     );
   }
 
+  static void showToast(BuildContext context, String text) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text("Contact administrator ERR:  $text"),
+        action: SnackBarAction(
+            label: 'Hide', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
   void acceptTrip() {
-    String rideID = widget.tripDetails.rideID;
-    rideRef =
-        FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
+    if (widget.tripDetails != null) {
+      if (currentDriverInfo != null) {
+        String rideID = widget.tripDetails.rideID;
+        rideRef =
+            FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
 
-    rideRef.child('status').set('accepted');
-    rideRef.child('driver_name').set(currentDriverInfo.fullName);
-    rideRef
-        .child('car_details')
-        .set('${currentDriverInfo.carColor} - ${currentDriverInfo.carModel}');
-    rideRef.child('driver_phone').set(currentDriverInfo.phone);
-    rideRef.child('driver_id').set(currentDriverInfo.id);
+        rideRef.child('status').set('accepted');
+        rideRef.child('driver_name').set(currentDriverInfo.fullName);
+        rideRef.child('car_details').set(
+            '${currentDriverInfo.carColor} - ${currentDriverInfo.carModel}');
+        rideRef.child('driver_phone').set(currentDriverInfo.phone);
+        rideRef.child('driver_id').set(currentDriverInfo.id);
 
-    Map locationMap = {
-      'latitude': currentPosition.latitude.toString(),
-      'longitude': currentPosition.longitude.toString(),
-    };
+        Map locationMap = {
+          'latitude': currentPosition.latitude.toString(),
+          'longitude': currentPosition.longitude.toString(),
+        };
 
-    rideRef.child('driver_location').set(locationMap);
+        rideRef.child('driver_location').set(locationMap);
 
-    DatabaseReference historyRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${currentFirebaseUser.uid}/history/$rideID');
-    historyRef.set(true);
+        //  need to maintain NewTrip field so we can track what is the user status at
+        // 	a given time
+        rideRef = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${currentDriverInfo.id}');
+        rideRef.child("rideId").set(rideID);
+      } else {
+        showToast(context, "ERR_DR_002");
+      }
+    } else {
+      showToast(context, "ERR_DR_001");
+    }
+
+    if (appRestaredMiddleOfRide) {
+      status = 'ontrip';
+      setState(() {
+        buttonTitle = 'END TRIP';
+        buttonColor = Colors.red[900];
+      });
+      rideRef.child("driver_location").child('status').set('ontrip');
+
+      DatabaseReference historyRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentFirebaseUser.uid}/newtrip/');
+      historyRef.set("ended");
+
+      startTimer();
+    }
   }
 
   void updateTripDetails() async {
@@ -541,6 +583,15 @@ class _NewTripPageState extends State<NewTripPage> {
 
     ridePositionStream.cancel();
 
+    // after ending ride the drivers newtrip status must set to waiting
+    rideRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentDriverInfo.id}');
+    rideRef.child("newtrip").set("waiting");
+
+    topUpEarnings(fares);
+    driverTripHistory(widget.tripDetails,fares);
+
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -549,7 +600,59 @@ class _NewTripPageState extends State<NewTripPage> {
               fares: fares,
             ));
 
-    topUpEarnings(fares);
+
+  }
+
+  void driverTripHistory(TripDetails tripDetails, int fare) {
+    print("inside driverTripHistory $currentFirebaseUser.uid");
+    DatabaseReference earningsRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
+
+    Map pickupMap = {
+      'latitude': tripDetails.pickup.latitude.toString(),
+      'longitude': tripDetails.pickup.longitude.toString(),
+    };
+    Map destinationMap = {
+      'latitude': tripDetails.destination.latitude.toString(),
+      'longitude': tripDetails.destination.longitude.toString(),
+    };
+
+    Map historyMap = {
+      "rideID":tripDetails.rideID,
+      "pickup":pickupMap,
+      "destination":destinationMap,
+      "pickupAddress":tripDetails.pickupAddress,
+      "destinationAddress":tripDetails.destinationAddress,
+      "fare":fare
+    };
+    earningsRef.set(historyMap);
+  }
+
+  void driverPaymentHistory(TripDetails tripDetails, int fare) {
+    print("inside driverTripHistory $currentFirebaseUser.uid");
+    DatabaseReference earningsRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
+
+    Map pickupMap = {
+      'latitude': tripDetails.pickup.latitude.toString(),
+      'longitude': tripDetails.pickup.longitude.toString(),
+    };
+    Map destinationMap = {
+      'latitude': tripDetails.destination.latitude.toString(),
+      'longitude': tripDetails.destination.longitude.toString(),
+    };
+
+    Map historyMap = {
+      "rideID":tripDetails.rideID,
+      "pickup":pickupMap,
+      "destination":destinationMap,
+      "pickupAddress":tripDetails.pickupAddress,
+      "destinationAddress":tripDetails.destinationAddress,
+      "fare":fare
+    };
+    earningsRef.set(historyMap);
   }
 
   void topUpEarnings(int fares) {

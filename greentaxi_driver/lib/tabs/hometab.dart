@@ -25,12 +25,11 @@ class HomeTab extends StatefulWidget {
   _HomeTabState createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
-
+class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    switch(state){
+    switch (state) {
       case AppLifecycleState.paused:
         print('paused state');
         break;
@@ -42,7 +41,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
         break;
     }
   }
-
 
   GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
@@ -61,10 +59,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
     currentPosition = position;
     LatLng pos = LatLng(position.latitude, position.longitude);
 
-
-
     driverInitialPos = pos;
-
   }
 
   void getCurrentDriverInfo() async {
@@ -82,7 +77,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
     });
 
     PushNotificationService pushNotificationService = PushNotificationService();
-    pushNotificationService.initialize(context,driverInitialPos);
+    pushNotificationService.initialize(context, driverInitialPos);
     pushNotificationService.getToken();
 
     //HelperMethods.getHistoryInfo(context);
@@ -182,7 +177,20 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
     }
   }
 
+  static void showToast(BuildContext context, String text) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text(text),
+        action: SnackBarAction(
+            label: 'Hide', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
   void GoOnline() {
+    //showToast(context,"You are going online");
+
     Geofire.initialize('driversAvailable');
     print("Geofire Started");
     Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude,
@@ -210,9 +218,13 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
   * */
   void GoOffline() {
     Geofire.removeLocation(currentFirebaseUser.uid);
+    tripRequestRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFirebaseUser.uid}/newtrip');
+    tripRequestRef.set('offline');
     tripRequestRef.onDisconnect();
-    tripRequestRef.remove();
-    tripRequestRef = null;
+    // tripRequestRef.remove();
+    // tripRequestRef = null;
   }
 
   /*
@@ -225,6 +237,8 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver{
       currentPosition = position;
       if (isAvailable) {
         //Update the location to the firebase
+        print(
+            "LocationUpdates -> ${currentFirebaseUser.uid} ON ${position.latitude.toString()} and ${position.longitude.toString()}");
         Geofire.setLocation(
             currentFirebaseUser.uid, position.latitude, position.longitude);
       }

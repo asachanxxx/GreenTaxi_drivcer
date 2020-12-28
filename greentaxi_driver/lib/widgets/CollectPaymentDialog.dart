@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
+import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
+import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
@@ -32,6 +34,7 @@ class CollectPayment extends StatelessWidget {
               height: 20,
             ),
             BrandDivider(),
+            BrandDivider(),
             SizedBox(
               height: 16.0,
             ),
@@ -59,9 +62,18 @@ class CollectPayment extends StatelessWidget {
                 title: (paymentMethod == 'cash') ? 'COLLECT CASH' : 'CONFIRM',
                 color: Color(0xfff57f17),
                 onPress: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-
+                  if(appRestaredMiddleOfRide){
+                    appRestaredMiddleOfRide = false;
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              MainPage(),
+                        ));
+                  }else {
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  }
                   HelperMethods.enableHomTabLocationUpdates();
                 },
               ),

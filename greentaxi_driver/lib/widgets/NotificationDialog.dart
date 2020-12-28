@@ -71,9 +71,9 @@ class NotificationDialog extends StatelessWidget {
                       Expanded(
                           child: Container(
                               child: Text(
-                                tripDetails.pickupAddress,
-                                style: GoogleFonts.roboto(fontSize: 18),
-                              )))
+                        tripDetails.pickupAddress,
+                        style: GoogleFonts.roboto(fontSize: 18),
+                      )))
                     ],
                   ),
                   SizedBox(
@@ -93,9 +93,9 @@ class NotificationDialog extends StatelessWidget {
                       Expanded(
                           child: Container(
                               child: Text(
-                                tripDetails.destinationAddress,
-                                style: GoogleFonts.roboto(fontSize: 18),
-                              )))
+                        tripDetails.destinationAddress,
+                        style: GoogleFonts.roboto(fontSize: 18),
+                      )))
                     ],
                   ),
                 ],
@@ -115,7 +115,7 @@ class NotificationDialog extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      child: TaxiOutlineButton (
+                      child: TaxiOutlineButton(
                         title: 'DECLINE',
                         color: BrandColors.colorPrimary,
                         onPressed: () async {
@@ -177,9 +177,9 @@ class NotificationDialog extends StatelessWidget {
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
 
-
       if (thisRideID == tripDetails.rideID) {
         newRideRef.set('accepted');
+
         ///This will remove the incoming data stream to him cus he is on a trip
         HelperMethods.disableHomTabLocationUpdates();
         Navigator.push(
@@ -192,21 +192,60 @@ class NotificationDialog extends StatelessWidget {
       } else if (thisRideID == 'cancelled') {
         Toast.show("Ride has been cancelled", context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+        cancelOrTimeout(true);
       } else if (thisRideID == 'timeout') {
+        cancelOrTimeout(false);
         Toast.show("Ride has timed out", context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       } else {
         Toast.show("Ride not found 2", context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
-
-
-
     });
   }
 
-  void _launchMapsUrl( LatLng _originLatLng,  LatLng _destinationLatLng)   async {
-    final url = 'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
+  static void showToast(BuildContext context, String text) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text("Contact administrator ERR:  $text"),
+        action: SnackBarAction(
+            label: 'Hide', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
+  void cancelOrTimeout(bool isCancelled) {
+    // after ending ride the drivers newtrip status must set to waiting
+    if (tripDetails != null) {
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentDriverInfo.id}');
+      rideRef.child("newtrip").set("waiting");
+
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child('unCompletedTrips/${currentDriverInfo.id}');
+
+      String statusStr = "TimeOut";
+      if (isCancelled) {
+        statusStr = "Cancelled";
+      }
+
+      Map cancelledTrip = {
+        "rideID": tripDetails.rideID,
+        "driverID": currentFirebaseUser.uid,
+        "status": statusStr
+      };
+      rideRef.set(cancelledTrip);
+    } else {
+      // /showToast(context,"ERR_DR_002");
+    }
+  }
+
+  void _launchMapsUrl(LatLng _originLatLng, LatLng _destinationLatLng) async {
+    final url =
+        'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
     if (await canLaunch(url)) {
       print("Launching map.... $url");
       await launch(url);
@@ -214,5 +253,4 @@ class NotificationDialog extends StatelessWidget {
       throw 'Could not launch $url';
     }
   }
-
 }

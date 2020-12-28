@@ -1,0 +1,29 @@
+1. after Trip requests customer app needs to update on drivers aproch. this already done in Drivers app
+-Nodes:  rideRequest --> <Request ID> --> driver_location
+-Updates : rideRequest --> <Request ID> --> status ===> updated to "arrived"
+
+2. after arrived after driver click start trip button customer location needs to update on customer app
+-nodes:  rideRequest --> <Request ID> --> location
+-Updates: rideRequest --> <Request ID> --> status ===> updated to "ontrip"
+
+3. When trip ended 
+-Updates: rideRequest --> <Request ID> --> status ===> updated to "ended"
+
+
+
+TODO
+----
+*. when we driver accept the ride it is in the Accept Ride status. so the driver will be arriving to customer location
+   so we need to show that driver will be arriving to him in customer app
+*  when trip start the pointer needs to move with location update in customer app 
+*. Change Icons of the Side bar accordingly
+*. In customer app when we browse we need a pointer in middle of the app. 
+   if customer stops somewhere we need to aqure that location 
+*. Pickup text box in main also need location search. cus customer may be booking for someone else
+*. Favorite Places and TRIPS
+	- There will be a option on location searchi called Favorite Places. when customer click it then goes to separate page witch will let cusotmer to add and select 
+	  either destination  or Starting location from a facorite list 
+	- Also there will be a option in side bar called favorite Trips. in thire customer can add or delete his favorite trips.
+          and if customer clicks one of them then it will be directed to request tip page directly
+          (OR WE CAN add landing page like pickme then add some option to show this )
+	

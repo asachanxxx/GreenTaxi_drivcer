@@ -10,6 +10,8 @@ import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/dataprovider/SystemConfigs.dart';
 import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
+import 'package:greentaxi_driver/models/paymenthistory.dart';
+import 'package:greentaxi_driver/models/tripdetails.dart';
 
 String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
 
@@ -45,3 +47,10 @@ Color availabilityColor = Colors.redAccent;
 SystemSettings systemSettings;
 
 LatLng driverInitialPos;
+
+String dRoute = "";
+TripDetails tripDetails;
+bool appRestaredMiddleOfRide = false;
+
+PaymentDetails paymentDetails;
+
