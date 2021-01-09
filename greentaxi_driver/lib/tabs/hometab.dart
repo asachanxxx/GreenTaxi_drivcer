@@ -190,7 +190,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
 
   void GoOnline() {
     //showToast(context,"You are going online");
-
+    isOnline = true;
     Geofire.initialize('driversAvailable');
     print("Geofire Started");
     Geofire.setLocation(currentFirebaseUser.uid, currentPosition.latitude,
@@ -217,6 +217,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   * This responsible to go online for the driver. with help of geofire
   * */
   void GoOffline() {
+    isOnline = false;
     Geofire.removeLocation(currentFirebaseUser.uid);
     tripRequestRef = FirebaseDatabase.instance
         .reference()

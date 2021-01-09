@@ -6,12 +6,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/dataprovider/SystemConfigs.dart';
-import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 import 'package:greentaxi_driver/models/paymenthistory.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/models/vtype.dart';
 
 String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
 
@@ -53,4 +52,10 @@ TripDetails tripDetails;
 bool appRestaredMiddleOfRide = false;
 
 PaymentDetails paymentDetails;
+
+List<VType> globalVTypes = new List<VType>();
+
+bool isOnline = false;
+
+
 

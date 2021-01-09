@@ -71,6 +71,10 @@ class PushNotificationService {
   }
 
   void fetchRideInfo(String rideID, context,LatLng pos){
+    if(!isOnline){
+
+      return;
+    }
     //show please wait dialog
     showDialog(
       barrierDismissible: false,
@@ -117,6 +121,21 @@ class PushNotificationService {
         tripDetails.paymentMethod = paymentMethod;
         tripDetails.riderName = riderName;
         tripDetails.riderPhone = riderPhone;
+
+
+        if(snapshot.value['ownDriver'] != null){
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        }else if (snapshot.value['ownDriver']  == "system") {
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        }else{
+          tripDetails.commissionedDriverId = snapshot.value['ownDriver'] ;
+          tripDetails.commissionApplicable = true;
+        }
+
+        print("tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
+
 
         showDialog(
           context: context,

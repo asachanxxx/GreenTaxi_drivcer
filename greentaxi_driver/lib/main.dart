@@ -29,19 +29,19 @@ void main() async {
     name: 'db2',
     options: Platform.isIOS || Platform.isMacOS
         ? FirebaseOptions(
-      appId: '1:297855924061:ios:c6de2b69b03a5be8',
-      apiKey: 'AIzaSyD_shO5mfO9lhy2TVWhfo1VUmARKlG4suk',
-      projectId: 'flutter-firebase-plugins',
-      messagingSenderId: '297855924061',
-      databaseURL: 'https://flutterfire-cd2f7.firebaseio.com',
-    )
+            appId: '1:297855924061:ios:c6de2b69b03a5be8',
+            apiKey: 'AIzaSyD_shO5mfO9lhy2TVWhfo1VUmARKlG4suk',
+            projectId: 'flutter-firebase-plugins',
+            messagingSenderId: '297855924061',
+            databaseURL: 'https://flutterfire-cd2f7.firebaseio.com',
+          )
         : FirebaseOptions(
-      appId: '1:347124843484:android:40f86d925cada1ec4c8519',
-      apiKey: 'AIzaSyDyHdxItuvyksZDh6nmjMcRnZRNPt86ETk',
-      messagingSenderId: '297855924061',
-      projectId: 'greentaxi-48ad5',
-      databaseURL: 'https://greentaxi-48ad5.firebaseio.com',
-    ),
+            appId: '1:347124843484:android:40f86d925cada1ec4c8519',
+            apiKey: 'AIzaSyDyHdxItuvyksZDh6nmjMcRnZRNPt86ETk',
+            messagingSenderId: '297855924061',
+            projectId: 'greentaxi-48ad5',
+            databaseURL: 'https://greentaxi-48ad5.firebaseio.com',
+          ),
   );
 
   currentFirebaseUser = FirebaseAuth.instance.currentUser;
@@ -51,13 +51,13 @@ void main() async {
   * Redirect to the login page
   * */
   systemSettings = await CompanyRepository().fetchSystemConfigurations();
+
   if (currentFirebaseUser != null) {
     dRoute =
-    await CompanyRepository().getNewTripStatus(currentFirebaseUser.uid);
+        await CompanyRepository().getNewTripStatus(currentFirebaseUser.uid);
     print(
-        "void main() $dRoute and currentFirebaseUser.uid = ${currentFirebaseUser
-            .uid}");
-    if (dRoute != null) {
+        "void main() $dRoute and currentFirebaseUser.uid = ${currentFirebaseUser.uid}");
+    if (dRoute != null && dRoute.trim().length >10) {
       tripDetails = await CompanyRepository().getTripDetails(dRoute);
     } else {
       dRoute = 'main';
@@ -84,8 +84,7 @@ class _MyAppState extends State<MyApp> {
       returnScreen = 'login';
     } else if (dRoute == "main") {
       returnScreen = 'main';
-    }
-    else if (dRoute.length < 10) {
+    } else if (dRoute.length < 10) {
       //Rider has no uncompleted ride
       returnScreen = 'main';
     } else {

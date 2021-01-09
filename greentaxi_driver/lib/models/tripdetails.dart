@@ -10,6 +10,8 @@ class TripDetails {
   String paymentMethod;
   String riderName;
   String riderPhone;
+  bool commissionApplicable;
+  String commissionedDriverId;
 
   TripDetails({
     this.pickupAddress,

@@ -10,6 +10,7 @@ import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/helpers/mapkithelper.dart';
+import 'package:greentaxi_driver/models/paymenthistory.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
 import 'package:greentaxi_driver/widgets/CollectPaymentDialog.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
@@ -57,6 +58,8 @@ class _NewTripPageState extends State<NewTripPage> {
   Timer timer;
 
   int durationCounter = 0;
+
+
 
   void getLocationUpdates() {
     /*
@@ -355,8 +358,10 @@ class _NewTripPageState extends State<NewTripPage> {
   }
 
   void acceptTrip() {
+    paymentDetails = PaymentDetails();
     if (widget.tripDetails != null) {
       if (currentDriverInfo != null) {
+
         String rideID = widget.tripDetails.rideID;
         rideRef =
             FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
@@ -381,6 +386,14 @@ class _NewTripPageState extends State<NewTripPage> {
             .reference()
             .child('drivers/${currentDriverInfo.id}');
         rideRef.child("rideId").set(rideID);
+
+        //Setting payment Details
+        paymentDetails.pickupAddress = widget.tripDetails.pickupAddress;
+        paymentDetails.destinationAddress = widget.tripDetails.destinationAddress;
+        paymentDetails.rideID = widget.tripDetails.rideID;
+
+
+
       } else {
         showToast(context, "ERR_DR_002");
       }
@@ -564,95 +577,137 @@ class _NewTripPageState extends State<NewTripPage> {
   }
 
   void endTrip() async {
-    timer.cancel();
+    if(timer != null) {
+      timer.cancel();
+    }
 
-    HelperMethods.showProgressDialog(context);
+    if(widget.tripDetails != null) {
 
-    var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+      HelperMethods.showProgressDialog(context);
 
-    var directionDetails = await HelperMethods.getDirectionDetails(
-        widget.tripDetails.pickup, currentLatLng);
+      var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
 
-    Navigator.pop(context);
+      var directionDetails = await HelperMethods.getDirectionDetails(
+          widget.tripDetails.pickup, currentLatLng);
 
-    int fares = HelperMethods.estimateFares(directionDetails, durationCounter);
+      Navigator.pop(context);
 
-    rideRef.child('fares').set(fares.toString());
+      int fares = HelperMethods.estimateFares(
+          directionDetails, "Type2", widget.tripDetails);
 
-    rideRef.child('status').set('ended');
+      rideRef.child('fares').set(fares.toString());
 
-    ridePositionStream.cancel();
+      rideRef.child('status').set('ended');
 
-    // after ending ride the drivers newtrip status must set to waiting
-    rideRef = FirebaseDatabase.instance
+      ridePositionStream.cancel();
+
+      /// after ending ride the drivers newtrip status must set to waiting
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentDriverInfo.id}');
+      rideRef.child("newtrip").set("waiting");
+
+      ///This will cumilatly increment the earnings of the driver
+      topUpEarnings(fares);
+
+      ///Saving the Trip history
+      driverTripHistory(widget.tripDetails, fares);
+
+      ///Saving the Payment Details
+      driverPaymentHistory(widget.tripDetails);
+
+
+
+      ///Update Cash Flows
+      updateCashFlows(widget.tripDetails);
+
+      print("Came point 1");
+
+      showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) =>
+              CollectPayment(
+                paymentMethod: widget.tripDetails.paymentMethod,
+                fares: fares,
+              ));
+    }else{
+      showToast(context, "ERR_DR_005");
+    }
+  }
+  void updateCashFlows(TripDetails tripDetailsx) {
+    DatabaseReference earningsRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentDriverInfo.id}');
-    rideRef.child("newtrip").set("waiting");
-
-    topUpEarnings(fares);
-    driverTripHistory(widget.tripDetails,fares);
-
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) => CollectPayment(
-              paymentMethod: widget.tripDetails.paymentMethod,
-              fares: fares,
-            ));
-
-
+        .child('drivers/${currentFirebaseUser.uid}/cashflows/cr');
+    earningsRef.once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
+        ///Top up credit value is one avaiblable
+        double oldEarnings = double.parse(snapshot.value.toString());
+        double adjustedEarnings = (paymentDetails.companyPayable.toDouble()) +
+            oldEarnings;
+        earningsRef.set(adjustedEarnings.toStringAsFixed(2));
+      } else {
+        ///Create new value if not available
+        double adjustedEarnings = (paymentDetails.companyPayable.toDouble());
+        earningsRef.set(adjustedEarnings.toStringAsFixed(2));
+      }
+    });
   }
 
   void driverTripHistory(TripDetails tripDetails, int fare) {
-    print("inside driverTripHistory $currentFirebaseUser.uid");
-    DatabaseReference earningsRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
+    if(tripDetails != null) {
+      print("inside driverTripHistory $currentFirebaseUser.uid");
+      DatabaseReference earningsRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails
+          .rideID}');
 
-    Map pickupMap = {
-      'latitude': tripDetails.pickup.latitude.toString(),
-      'longitude': tripDetails.pickup.longitude.toString(),
-    };
-    Map destinationMap = {
-      'latitude': tripDetails.destination.latitude.toString(),
-      'longitude': tripDetails.destination.longitude.toString(),
-    };
+      Map pickupMap = {
+        'latitude': tripDetails.pickup.latitude.toString(),
+        'longitude': tripDetails.pickup.longitude.toString(),
+      };
+      Map destinationMap = {
+        'latitude': tripDetails.destination.latitude.toString(),
+        'longitude': tripDetails.destination.longitude.toString(),
+      };
 
-    Map historyMap = {
-      "rideID":tripDetails.rideID,
-      "pickup":pickupMap,
-      "destination":destinationMap,
-      "pickupAddress":tripDetails.pickupAddress,
-      "destinationAddress":tripDetails.destinationAddress,
-      "fare":fare
-    };
-    earningsRef.set(historyMap);
+      Map historyMap = {
+        "rideID": tripDetails.rideID,
+        "pickup": pickupMap,
+        "destination": destinationMap,
+        "pickupAddress": tripDetails.pickupAddress,
+        "destinationAddress": tripDetails.destinationAddress,
+        "fare": fare,
+        "date": DateTime.now().toString()
+      };
+      earningsRef.set(historyMap);
+    }else{
+      showToast(context, "ERR_DR_004");
+    }
   }
 
-  void driverPaymentHistory(TripDetails tripDetails, int fare) {
+  void driverPaymentHistory(TripDetails tripDetailsx) {
+
     print("inside driverTripHistory $currentFirebaseUser.uid");
     DatabaseReference earningsRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
+        .child('drivers/${currentFirebaseUser.uid}/paymentHistory/${tripDetailsx.rideID}');
 
-    Map pickupMap = {
-      'latitude': tripDetails.pickup.latitude.toString(),
-      'longitude': tripDetails.pickup.longitude.toString(),
+    Map paymentHistoryMap = {
+      "rideID":paymentDetails.rideID,
+      "commission":paymentDetails.commission,
+      "commissionApplicable":paymentDetails.commissionApplicable,
+      "companyPayable":paymentDetails.companyPayable,
+      "totalFare":paymentDetails.totalFare,
+      "appPrice":paymentDetails.appPrice,
+      "kmPrice":paymentDetails.kmPrice,
+      "totalFare":paymentDetails.totalFare,
+      "timePrice":paymentDetails.timePrice,
+      "destinationAddress":paymentDetails.destinationAddress,
+      "pickupAddress":paymentDetails.pickupAddress,
+      "date": DateTime.now().toString()
     };
-    Map destinationMap = {
-      'latitude': tripDetails.destination.latitude.toString(),
-      'longitude': tripDetails.destination.longitude.toString(),
-    };
-
-    Map historyMap = {
-      "rideID":tripDetails.rideID,
-      "pickup":pickupMap,
-      "destination":destinationMap,
-      "pickupAddress":tripDetails.pickupAddress,
-      "destinationAddress":tripDetails.destinationAddress,
-      "fare":fare
-    };
-    earningsRef.set(historyMap);
+    earningsRef.set(paymentHistoryMap);
   }
 
   void topUpEarnings(int fares) {

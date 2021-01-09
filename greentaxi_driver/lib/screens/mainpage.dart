@@ -2,6 +2,8 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
+import 'package:greentaxi_driver/globalvariables.dart';
+import 'package:greentaxi_driver/shared/repository/companyrepository.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/tabs/customertab.dart';
 import 'package:greentaxi_driver/tabs/earningstab.dart';
@@ -15,12 +17,12 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin,WidgetsBindingObserver {
-
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   TabController tabController;
   int selecetdIndex = 0;
 
-  void onItemClicked(int index){
+  void onItemClicked(int index) {
     setState(() {
       selecetdIndex = index;
       tabController.index = selecetdIndex;
@@ -32,6 +34,12 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     // TODO: implement initState
     super.initState();
     tabController = TabController(length: 5, vsync: this);
+    CompanyRepository().getVehicleTypeInfo().then((value) {
+      setState(() {
+        globalVTypes = value;
+        print("getVehicleTypeInfo  ${value.length}");
+      });
+    });
   }
 
   @override
@@ -43,12 +51,10 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 
   //AppLifecycleState _notification;
 
-
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    switch(state){
+    switch (state) {
       case AppLifecycleState.paused:
         print('paused state');
         break;
@@ -64,11 +70,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: TabBarView(
         physics: NeverScrollableScrollPhysics(),
         controller: tabController,
@@ -78,29 +82,34 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
           CustomerTab(),
           ProfileTab(),
           RatingsTab(),
-
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home,color: Colors.black54),
-            title: Text('Home', style: f_font_tabtitleColor,),
+            icon: Icon(Icons.home, color: Colors.black54),
+            title: Text(
+              'Home',
+              style: f_font_tabtitleColor,
+            ),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.credit_card,color: Colors.black54),
+            icon: Icon(Icons.credit_card, color: Colors.black54),
             title: Text('Earnings', style: f_font_tabtitleColor),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.star,color: Colors.black54,),
+            icon: Icon(
+              Icons.star,
+              color: Colors.black54,
+            ),
             title: Text('Customers', style: f_font_tabtitleColor),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person,color: Colors.black54),
+            icon: Icon(Icons.person, color: Colors.black54),
             title: Text('Account', style: f_font_tabtitleColor),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person,color: Colors.black54),
+            icon: Icon(Icons.person, color: Colors.black54),
             title: Text('Ratings', style: f_font_tabtitleColor),
           ),
         ],
