@@ -38,9 +38,9 @@ class _StartUpScrState extends State<VehicleInfo> {
 
   void registerVehicle() async {
     try {
-      if (currentFirebaseUser != null) {
+      if (FirebaseAuth.instance.currentUser != null) {
         DatabaseReference dbRef = FirebaseDatabase.instance.reference().child(
-            'drivers/${currentFirebaseUser.uid}/vehicle_details');
+            'drivers/${FirebaseAuth.instance.currentUser.uid}/vehicle_details');
         Map vehicleMap = {
           'fleetNo': fleetnocontoller.text,
           'make': makecontoller.text,
@@ -103,35 +103,54 @@ class _StartUpScrState extends State<VehicleInfo> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Welcome to Flutter',
-        home: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage("images/backgrounds/pagemain.jpg"),
-                  fit: BoxFit.cover)),
-          child: Container(
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(top: 100, left: 20, right: 20),
-                child: Scaffold(
-                  key: scaffoldKey,
-                  body: SingleChildScrollView(
+
+    return Scaffold(
+        key: scaffoldKey,
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(top: 10, left: 20, right: 20),
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget> [
+                  Container(
+                    child: Stack(
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.fromLTRB(15.0, 20.0, 0.0, 0.0),
+                          child: Text(
+                            'taXy',
+                            style:
+                            GoogleFonts.lobster(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(110.0, 30.0, 0.0, 0.0),
+                          child: Text(
+                            '.',
+                            style: TextStyle(
+                                fontSize: 60.0,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFff6f00)),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white
+                    ),
                     child: Column(
                       children: <Widget>[
-                        SizedBox(height: 25,),
+
                         Text('Vehicle information',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.roboto(
-                              fontSize: 25, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
-                        // Text('Driver: ' + currentFirebaseUser.displayName,
-                        //   textAlign: TextAlign.center,
-                        //   style: GoogleFonts.roboto(
-                        //       fontSize: 15, fontWeight: FontWeight.normal),
-                        // ),
                         Padding(
-                          padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
+                          padding: EdgeInsets.all(20.0),
+
                           child: Column(
                             children: <Widget>[
                               TextField(
@@ -182,32 +201,11 @@ class _StartUpScrState extends State<VehicleInfo> {
 
 
                               SizedBox(height: 10,),
-                              //Text("${selectedDate.toLocal()}".split(' ')[0]),
 
-                              // DateTimePicker(
-                              //   type: DateTimePickerType.date,
-                              //   dateMask: 'd MMM, yyyy',
-                              //   initialValue: DateTime.now().toString(),
-                              //   firstDate: DateTime(2000),
-                              //   lastDate: DateTime(2100),
-                              //   icon: Icon(Icons.event),
-                              //   dateLabelText: 'Insurance Expire',
-                              //   timeLabelText: "Hour",
-                              //   onChanged: (val) {
-                              //     selectedDate = new DateFormat('yyyy-MM-dd').parse(val).toLocal();
-                              //     print(selectedDate);
-                              //   },
-                              //   validator: (val) {
-                              //     print(val);
-                              //     return null;
-                              //   },
-                              //   onSaved: (val){
-                              //   },
-                              // ),
                               SizedBox(height: 30,),
                               TaxiButton(
                                 title: "Register",
-                                color: Color(0xff5a5fff),
+                                color: Color(0xFFff6f00),
                                 onPress: () async {
                                   //Check network aialability
                                   var connectivity = await Connectivity()
@@ -218,7 +216,7 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     print('Oops! seems you are offline.');
                                     return;
                                   }
-                                  if (fleetnocontoller.text.length != 8) {
+                                  if (fleetnocontoller.text.length > 8) {
                                     showSnackBar(
                                         'Oops! invalid plate no.');
                                     print('Oops! invalid plate no.');
@@ -264,16 +262,23 @@ class _StartUpScrState extends State<VehicleInfo> {
                               )
                             ],
                           ),
+
                         ),
 
+
+                        // SizedBox(height: 160,),
                       ],
                     ),
+
                   ),
-                ),
+                ],
               ),
             ),
           ),
         )
     );
+
+
+
   }
 }

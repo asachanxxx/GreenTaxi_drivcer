@@ -56,6 +56,7 @@ PaymentDetails paymentDetails;
 List<VType> globalVTypes = new List<VType>();
 
 bool isOnline = false;
-
-
+bool vehicleInfoCompleteStatus;
+LatLng posError = LatLng(6.877133555388284, 79.98983549839619);
+String currentTab = "Home";
 

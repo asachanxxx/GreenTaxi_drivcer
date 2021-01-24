@@ -1,8 +1,10 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
+import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/shared/repository/companyrepository.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/tabs/customertab.dart';
@@ -33,12 +35,17 @@ class _MainPageState extends State<MainPage>
   void initState() {
     // TODO: implement initState
     super.initState();
+    posError = LatLng(6.877133555388284, 79.98983549839619);
     tabController = TabController(length: 5, vsync: this);
     CompanyRepository().getVehicleTypeInfo().then((value) {
       setState(() {
         globalVTypes = value;
         print("getVehicleTypeInfo  ${value.length}");
       });
+    });
+
+    HelperMethods.determinePosition().then((value) {
+      print("currentpossitionCheck $value");
     });
   }
 

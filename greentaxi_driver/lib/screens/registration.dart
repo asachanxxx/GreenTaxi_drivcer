@@ -60,7 +60,9 @@ class _CustomRegiterState extends State<RiderRegister> {
           'email': emailcontoller.text,
           'phoneNumber': phonecontoller.text,
           'pass': passwordcontoller.text,
+          'accountStatus': "Pending",
           'datetime': DateTime.now().toString()
+
         };
         newuser.set(usermap);
       }

@@ -10,6 +10,7 @@ import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/helpers/mapkithelper.dart';
+import 'package:greentaxi_driver/models/directionDetails.dart';
 import 'package:greentaxi_driver/models/paymenthistory.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
 import 'package:greentaxi_driver/widgets/CollectPaymentDialog.dart';
@@ -36,6 +37,9 @@ class _NewTripPageState extends State<NewTripPage> {
 
   List<LatLng> polylineCoordinates = [];
   PolylinePoints polylinePoints = PolylinePoints();
+
+  bool serviceEnabled;
+  LocationPermission permission;
 
   var geoLocator = Geolocator();
   var locationOptions =
@@ -73,8 +77,8 @@ class _NewTripPageState extends State<NewTripPage> {
     /*
     We use getPositionStream to get the location updates frequently. so every time the stream updated by the Firebase pos will be updated
     * */
-    ridePositionStream = geoLocator
-        .getPositionStream(locationOptions)
+    ridePositionStream = Geolocator
+        .getPositionStream()
         .listen((Position position) {
       myPosition = position;
       currentPosition = position;
@@ -142,6 +146,10 @@ class _NewTripPageState extends State<NewTripPage> {
     // TODO: implement initState
     super.initState();
     //print("NewTripPage  tripDetails ${tripDetails.rideID}");
+
+
+
+
     acceptTrip();
   }
 
@@ -611,10 +619,10 @@ class _NewTripPageState extends State<NewTripPage> {
       topUpEarnings(fares);
 
       ///Saving the Trip history
-      driverTripHistory(widget.tripDetails, fares);
+      driverTripHistory(widget.tripDetails, fares , directionDetails);
 
       ///Saving the Payment Details
-      driverPaymentHistory(widget.tripDetails);
+      driverPaymentHistory(widget.tripDetails,directionDetails);
 
 
 
@@ -654,7 +662,7 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
-  void driverTripHistory(TripDetails tripDetails, int fare) {
+  void driverTripHistory(TripDetails tripDetails, int fare, DirectionDetails directionDetails) {
     if(tripDetails != null) {
       print("inside driverTripHistory $currentFirebaseUser.uid");
       DatabaseReference earningsRef = FirebaseDatabase.instance
@@ -671,10 +679,18 @@ class _NewTripPageState extends State<NewTripPage> {
         'longitude': tripDetails.destination.longitude.toString(),
       };
 
+      Map directionMap = {
+        'distanceText': directionDetails.distanceText.toString(),
+        'distanceValue': directionDetails.distanceValue.toString(),
+        'durationValue': directionDetails.durationValue.toString(),
+        'durationText': directionDetails.durationText.toString(),
+      };
+
       Map historyMap = {
         "rideID": tripDetails.rideID,
         "pickup": pickupMap,
         "destination": destinationMap,
+        "directionDetails":directionMap,
         "pickupAddress": tripDetails.pickupAddress,
         "destinationAddress": tripDetails.destinationAddress,
         "fare": fare,
@@ -686,12 +702,19 @@ class _NewTripPageState extends State<NewTripPage> {
     }
   }
 
-  void driverPaymentHistory(TripDetails tripDetailsx) {
+  void driverPaymentHistory(TripDetails tripDetailsx,DirectionDetails directionDetails) {
 
     print("inside driverTripHistory $currentFirebaseUser.uid");
     DatabaseReference earningsRef = FirebaseDatabase.instance
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/paymentHistory/${tripDetailsx.rideID}');
+
+    Map directionMap = {
+      'distanceText': directionDetails.distanceText.toString(),
+      'distanceValue': directionDetails.distanceValue.toString(),
+      'durationValue': directionDetails.durationValue.toString(),
+      'durationText': directionDetails.durationText.toString(),
+    };
 
     Map paymentHistoryMap = {
       "rideID":paymentDetails.rideID,
@@ -705,7 +728,8 @@ class _NewTripPageState extends State<NewTripPage> {
       "timePrice":paymentDetails.timePrice,
       "destinationAddress":paymentDetails.destinationAddress,
       "pickupAddress":paymentDetails.pickupAddress,
-      "date": DateTime.now().toString()
+      "date": DateTime.now().toString(),
+      "directionDetails":directionMap
     };
     earningsRef.set(paymentHistoryMap);
   }

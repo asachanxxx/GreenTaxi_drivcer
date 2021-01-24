@@ -6,8 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
+import 'package:greentaxi_driver/globalvariables.dart';
+import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/screens/registration.dart';
+import 'package:greentaxi_driver/screens/userstatusscreen.dart';
+import 'package:greentaxi_driver/screens/vehicleinfo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
@@ -37,39 +41,55 @@ class _LoginPageState extends State<LoginPage> {
   var passwordController = TextEditingController();
 
   void login() async {
-
     //show please wait dialog
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (BuildContext context) => ProgressDialog(status: 'Logging you in',),
+      builder: (BuildContext context) =>
+          ProgressDialog(status: 'Logging you in',),
     );
 
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text
-    ).catchError((ex){
-
+    ).catchError((ex) {
       //check error and display message
       Navigator.pop(context);
       //PlatformException thisEx = ex;
       showSnackBar(ex.message);
-
     });
 
 
-
     User user = userCredential.user;
-    if(user != null){
+    if (user != null) {
       // verify login
-      DatabaseReference userRef = FirebaseDatabase.instance.reference().child('drivers/${user.uid}');
+      DatabaseReference userRef = FirebaseDatabase.instance.reference().child(
+          'drivers/${user.uid}');
       userRef.once().then((DataSnapshot snapshot) {
-        if(snapshot.value != null){
-          Navigator.pushNamedAndRemoveUntil(context, MainPage.Id, (route) => false);
+        if (snapshot.value != null) {
+          if (snapshot.value["accountStatus"] == "Banned") {
+            Navigator.pushNamedAndRemoveUntil(
+                context, UserStatusScreen.Id, (route) => false);
+          } else {
+            if (snapshot.value["vehicle_details"] != null) {
+              currentFirebaseUser = FirebaseAuth.instance.currentUser;
+              Navigator.pushNamedAndRemoveUntil(
+                  context, MainPage.Id, (route) => false);
+            } else {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, VehicleInfo.Id, (route) => false);
+            }
+          }
+        } else {
+          //check error and display message
+          Navigator.pop(context);
+          showSnackBar("Oops! this account has no Associated driver account");
         }
       });
-
+      HelperMethods.determinePosition().then((value) {
+        print("currentpossitionCheck $value");
+      });
     }
   }
 

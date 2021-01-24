@@ -13,7 +13,7 @@ class CompanyRepository {
   Future<SystemSettings> fetchSystemConfigurations() async {
     var checkRef =
         await FirebaseDatabase.instance.reference().child("companies").once();
-    if (checkRef != null) {
+    if (checkRef.value != null) {
       Map<dynamic, dynamic> map = checkRef.value;
       //var firstElement = map.values.toList()[0]['SCR'];
       SystemSettings entity = SystemSettings.fromDb(map);
@@ -29,7 +29,7 @@ class CompanyRepository {
         .orderByChild("status")
         .equalTo("ended")
         .once();
-    if (checkRef != null) {
+    if (checkRef.value != null) {
       List<SystemSettings> theList = new List<SystemSettings>();
       //print ("Type of the checkRef  : $checkRef" );
 
@@ -71,14 +71,24 @@ class CompanyRepository {
         .reference()
         .child('drivers/$uid/newtrip')
         .once();
-    if (checkRef != null) {
-      // Map<dynamic, dynamic> map = checkRef.value;
-      // var firstElement = map.values.toList()[0];
-
-      print('xxxxxxx ${checkRef.value}');
+    if (checkRef.value != null) {
+      print('getNewTripStatus ${checkRef.value}');
       return checkRef.value;
     }
     return null;
+  }
+
+  Future<bool> getVehicleInfoCompleteStatus(String uid) async {
+    print("Came to getVehicleInfoCompleteStatus");
+    var checkRef = await FirebaseDatabase.instance
+        .reference()
+        .child('drivers/$uid/vehicle_details')
+        .once();
+    if (checkRef.value != null) {
+      print('getVehicleInfoCompleteStatus ${checkRef.value}');
+      return true;
+    }
+    return false;
   }
 
   Future<TripDetails> getTripDetails(String dRoute) async {
@@ -136,7 +146,7 @@ class CompanyRepository {
         .child("vehicleTypes")
         .orderByChild("name")
         .once();
-    if (checkRef != null) {
+    if (checkRef.value != null) {
       List<VType> theList = new List<VType>();
       checkRef.value.entries.forEach((snapshot) {
         print("==================================================");
@@ -157,4 +167,19 @@ class CompanyRepository {
     }
     return null;
   }
+
+
+  Future<dynamic> getCheckUidHasDriverAccount(String uid) async {
+    var checkRef = await FirebaseDatabase.instance
+        .reference()
+        .child('drivers/$uid/')
+        .once();
+    if (checkRef.value != null) {
+       print('getCheckUidHasDriverAccount  ${checkRef.value}');
+      return checkRef.value;
+    }
+    return false;
+  }
+
+
 }

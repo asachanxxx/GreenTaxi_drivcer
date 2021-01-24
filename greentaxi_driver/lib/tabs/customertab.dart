@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/customer.dart';
+import 'package:greentaxi_driver/screens/customerfunctions.dart';
 import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/shared/repository/customerrepository.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
@@ -129,6 +130,10 @@ class _CustomerTabState extends State<CustomerTab> {
           });
         }
       });
+
+      fullnamecontoller.text = "";
+      phonecontoller.text = "";
+
       showSnackBar('Hurray! Account created successfully');
     } on FirebaseAuthException catch (e) {
       //Navigator.pop(context);
@@ -162,12 +167,12 @@ class _CustomerTabState extends State<CustomerTab> {
                 color: Color(0xFFff6f00),
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 15),
+                  padding: EdgeInsets.symmetric(vertical: 10),
                   child: Column(
                     children: [
-                      Text("Manage Customers",
+                      Text("Customers",
                           style: GoogleFonts.roboto(
-                              fontSize: 30, fontWeight:FontWeight.bold,color: Color(0xFFffffff))
+                              fontSize: 25, fontWeight:FontWeight.bold,color: Color(0xFFffffff))
                       ),
                       Text("Driver E-Mail: ${currentFirebaseUser.email}",
                           style: GoogleFonts.roboto(
@@ -178,7 +183,7 @@ class _CustomerTabState extends State<CustomerTab> {
                   ),
                 ),
               ),
-              SizedBox(height: 10,),
+              SizedBox(height: 5,),
               SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -195,7 +200,7 @@ class _CustomerTabState extends State<CustomerTab> {
                       ),
                       SizedBox(height: 10,),
                       Container(
-                        height: 300,
+                        height: 250,
                         decoration: BoxDecoration(
                           color: Color(0xFFFFFFFF),
                           borderRadius: BorderRadius.circular(10),
@@ -210,11 +215,12 @@ class _CustomerTabState extends State<CustomerTab> {
                             itemBuilder: (BuildContext context, int index) {
                               return GestureDetector(
                                 onTap: (){
-                                    print("Hi");
+                                  Navigator.pushNamedAndRemoveUntil(context, CustomerFunctions.Id, (route) => false, arguments: customerList[index]);
+                                    print("Hi ${customerList[index].fullName}");
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Color(0xFFFFFFFF),
+                                    color: Color(0xFFcfd8dc),
                                     borderRadius: BorderRadius.circular(5),
                                     border: Border.all(width: 1.0,
                                         color: Color(0xFF78909c)),
@@ -225,7 +231,7 @@ class _CustomerTabState extends State<CustomerTab> {
                                     children:<Widget> [
                                       Padding(
                                         padding: const EdgeInsets.only(left: 10, top: 5,bottom: 2),
-                                        child: Text('${customerList[index].fullName}' ,style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold),),
+                                        child: Text('${customerList[index].fullName}' ,style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold ,color: Color(0xFF212121)),),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.only(left: 10, bottom: 2),
@@ -236,13 +242,15 @@ class _CustomerTabState extends State<CustomerTab> {
                                 ),
                               );
                             }
+
+
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20,),
+              SizedBox(height: 10,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(

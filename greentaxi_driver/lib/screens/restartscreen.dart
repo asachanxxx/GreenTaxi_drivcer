@@ -60,8 +60,8 @@ class _RestartScreenState extends State<RestartScreen> {
       }
     });
 
-    ridePositionStream = geoLocator
-        .getPositionStream(locationOptions)
+    ridePositionStream = Geolocator
+        .getPositionStream()
         .listen((Position position) {
       currentPosition = position;
     });

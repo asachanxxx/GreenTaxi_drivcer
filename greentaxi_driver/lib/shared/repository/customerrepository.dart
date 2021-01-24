@@ -7,7 +7,7 @@ class CustomerRepository {
   Future<List<Customer>> filterData(String driverID) async {
     var checkRef = await FirebaseDatabase.instance.reference().child(
         "customers").orderByChild("driverID").equalTo(driverID).once();
-    if (checkRef != null) {
+    if (checkRef != null || checkRef.value != null) {
       List<Customer> theList = new List<Customer>();
       //print ("Type of the checkRef  : $checkRef" );
 

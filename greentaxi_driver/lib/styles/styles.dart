@@ -235,21 +235,24 @@ final f_font_main_button = GoogleFonts.roboto(
 final f_font_Taxi_Button = GoogleFonts.roboto(
     fontSize: 17, color: Colors.white, fontWeight: FontWeight.normal);
 
-final kHintTextStyle = TextStyle(
+final kHintTextStyle = GoogleFonts.roboto(
   color: Colors.black87,
-  fontFamily: 'OpenSans',
 );
 
-final kHintTextStyle2 = TextStyle(
+final kHintTextStyle2 = GoogleFonts.roboto(
   color: Colors.black54,
-  fontFamily: 'OpenSans',
 );
 
-final kLabelStyle = TextStyle(
+final kLabelStyle = GoogleFonts.roboto(
   color: Colors.black,
   fontWeight: FontWeight.normal,
-  fontFamily: 'OpenSans',
 );
+
+final kLabelStyleEarnig = GoogleFonts.roboto(
+  color: Color(0xfff57f17),
+  fontWeight: FontWeight.bold,
+);
+
 
 final kLabelStyle_Black = GoogleFonts.roboto(
     fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xfff57f17));
@@ -257,8 +260,9 @@ final kLabelStyle_Ceyan = GoogleFonts.roboto(
     fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xff0277bd));
 
 final kBoxDecorationStyle = BoxDecoration(
-  color: Color(0xFFFFFFFF),
+  color: Color(0xFF000000),
   borderRadius: BorderRadius.circular(10.0),
+  border:Border.all(color: Colors.white,width: 2),
   boxShadow: [
     BoxShadow(
       color: Colors.black54,
@@ -267,6 +271,33 @@ final kBoxDecorationStyle = BoxDecoration(
     ),
   ],
 );
+
+final tabBoxDecorations = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(10),
+      topRight: Radius.circular(10),
+      bottomLeft: Radius.circular(10),
+      bottomRight: Radius.circular(10),
+    ),
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFcffffff),
+        Color(0xFFffffff),
+        Color(0xFFffffff),
+        Color(0xFFffffff),
+      ],
+      stops: [0.1, 0.4, 0.7, 0.9],
+    ),
+    boxShadow: [
+      BoxShadow(
+          color: Color(0xFFfbc02d),
+          blurRadius: 4.0,
+          spreadRadius: 0,
+          offset: Offset(0.4, 0.4))
+    ]);
 
 final vType_Default_Orange = GoogleFonts.roboto(
     fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xfff57f17));

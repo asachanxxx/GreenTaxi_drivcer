@@ -78,3 +78,6 @@ query.once("value", function(snapshot) {
             'isSystemOwned': true,
             'rating': 5,
           };
+
+
+accountStatus: "Pending","Active" , "TempBlock" , "Banned"
