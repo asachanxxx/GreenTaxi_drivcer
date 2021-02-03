@@ -1,3 +1,4 @@
+import 'package:dropdownfield/dropdownfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,11 +10,13 @@ import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 import 'package:greentaxi_driver/models/vehicleinfo.dart';
+import 'package:greentaxi_driver/screens/driverimagedetails.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/shared/auth/driverrepository.dart';
 import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
+import 'package:greentaxi_driver/widgets/dropDownScreen.dart';
 //import 'package:date_time_picker/date_time_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -22,6 +25,13 @@ class VehicleInfo extends StatefulWidget {
   @override
   _StartUpScrState createState() => _StartUpScrState();
 }
+
+class Item {
+  const Item(this.name,this.icon);
+  final String name;
+  final Icon icon;
+}
+
 
 class _StartUpScrState extends State<VehicleInfo> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -35,10 +45,35 @@ class _StartUpScrState extends State<VehicleInfo> {
   final colorcontoller = TextEditingController();
   final insuranceNumbercontoller = TextEditingController();
   final insuranceExpiryDatecontoller = TextEditingController();
+  String accountname = 'Select a vehicle type';
+
+  List<String> accountNames = [
+    "Select a vehicle type",
+    "Bikes",
+    "Tuk-Tuk",
+    "Flex-Nano",
+    "Flex-Alto",
+    "Car",
+    "Mini-Van",
+    "Van",
+  ];
+
+
+  // List<String> accountNames = [
+  //   "dropdown button will be disabled,",
+  //   "arrow will be displayed in grey and it will",
+  // ];
+
 
   void registerVehicle() async {
     try {
       if (FirebaseAuth.instance.currentUser != null) {
+
+        DatabaseReference dbRef2 = FirebaseDatabase.instance.reference().child(
+            'drivers/${FirebaseAuth.instance.currentUser.uid}/accountStatus');
+        dbRef2.set("NoImageDet");
+        dbRef2 = null;
+
         DatabaseReference dbRef = FirebaseDatabase.instance.reference().child(
             'drivers/${FirebaseAuth.instance.currentUser.uid}/vehicle_details');
         Map vehicleMap = {
@@ -47,11 +82,13 @@ class _StartUpScrState extends State<VehicleInfo> {
           'model': modelcontoller.text,
           'color': colorcontoller.text,
           'insuranceNo': insuranceNumbercontoller.text,
+          'vehicleType':accountname,
           'insuranceExpire': selectedDate.toString()
         };
         dbRef.set(vehicleMap);
+        dbRef = null;
         print('Save Done');
-        Navigator.pushNamedAndRemoveUntil(context, MainPage.Id, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, DriverMoreInfo.Id, (route) => false);
       } else {
         print('Current User nUll');
       }
@@ -115,24 +152,33 @@ class _StartUpScrState extends State<VehicleInfo> {
                   Container(
                     child: Stack(
                       children: <Widget>[
+
                         Container(
-                          padding: EdgeInsets.fromLTRB(15.0, 20.0, 0.0, 0.0),
-                          child: Text(
-                            'taXy',
-                            style:
-                            GoogleFonts.lobster(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                          //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:<Widget> [
+                              Text(
+                                'GO',
+                                style:
+                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                              ),
+                              Text(
+                                '2',
+                                style:
+                                GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                              ),
+                              Text(
+                                'GO',
+                                style:
+                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                              ),
+                            ],
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(110.0, 30.0, 0.0, 0.0),
-                          child: Text(
-                            '.',
-                            style: TextStyle(
-                                fontSize: 60.0,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFff6f00)),
-                          ),
-                        )
+
+
+
                       ],
                     ),
                   ),
@@ -198,11 +244,50 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Insurance No(EX: MCCNH200441011)'),
                                 style: f_font_text_Input,
                               ),
+                              SizedBox(height: 10,),
+                              Container(
+                                width: 350,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(width: 1.0, color: Colors.black26),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: DropdownButton<String>(
+                                    value: accountname,
+                                    icon: Icon(Icons.arrow_downward),
+                                    iconSize: 20,
+                                    elevation: 30,
+                                    isExpanded:true,
+                                    style: TextStyle(color: Colors.deepPurple),
+                                    underline: Container(
+                                      height: 2,
+                                      width: 150,
+                                      color: Colors.deepPurpleAccent,
+                                    ),
+                                    onChanged: (String newValue) {
+                                      setState(() {
+                                        accountname = newValue;
+                                        print("selected value  $accountname");
+                                      });
+                                    },
+                                    items: accountNames
+                                        .map<DropdownMenuItem<String>>((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ),
 
 
                               SizedBox(height: 10,),
 
                               SizedBox(height: 30,),
+
+
                               TaxiButton(
                                 title: "Register",
                                 color: Color(0xFFff6f00),
@@ -216,6 +301,13 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     print('Oops! seems you are offline.');
                                     return;
                                   }
+                                  if (accountname.trim() == "Select a vehicle type" ) {
+                                    showSnackBar(
+                                        'Oops! Please select a vehicle type.');
+                                    print('Oops! invalid insurance Number .');
+                                    return;
+                                  }
+
                                   if (fleetnocontoller.text.length > 8) {
                                     showSnackBar(
                                         'Oops! invalid plate no.');
@@ -252,6 +344,7 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     print('Oops! invalid insurance Number .');
                                     return;
                                   }
+
                                   // if (insuranceExpiryDatecontoller.text.length < 3) {
                                   //   showSnackBar(
                                   //       'Oops! invalid color (EX:light green,red).');
@@ -281,4 +374,7 @@ class _StartUpScrState extends State<VehicleInfo> {
 
 
   }
+
+
+
 }

@@ -8,9 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
+import 'package:greentaxi_driver/screens/driverimagedetails.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/screens/registration.dart';
 import 'package:greentaxi_driver/screens/userstatusscreen.dart';
+import 'package:greentaxi_driver/screens/userstatusscreenpending.dart';
 import 'package:greentaxi_driver/screens/vehicleinfo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
@@ -68,19 +70,49 @@ class _LoginPageState extends State<LoginPage> {
           'drivers/${user.uid}');
       userRef.once().then((DataSnapshot snapshot) {
         if (snapshot.value != null) {
-          if (snapshot.value["accountStatus"] == "Banned") {
+          var accStatus = snapshot.value["accountStatus"];
+
+          if (accStatus == "NoVehicleDet") {
+            Navigator.pushNamedAndRemoveUntil(
+                context, VehicleInfo.Id, (route) => false);
+          }
+          else if (accStatus == "NoImageDet") {
+            Navigator.pushNamedAndRemoveUntil(
+                context, DriverMoreInfo.Id, (route) => false);
+          }
+          else if (accStatus == "Banned") {
             Navigator.pushNamedAndRemoveUntil(
                 context, UserStatusScreen.Id, (route) => false);
-          } else {
-            if (snapshot.value["vehicle_details"] != null) {
-              currentFirebaseUser = FirebaseAuth.instance.currentUser;
-              Navigator.pushNamedAndRemoveUntil(
-                  context, MainPage.Id, (route) => false);
-            } else {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, VehicleInfo.Id, (route) => false);
-            }
           }
+          else if (accStatus == "Pending") {
+            Navigator.pushNamedAndRemoveUntil(
+                context, UserStatusScreenPending.Id, (route) => false);
+          }else{
+            currentFirebaseUser = FirebaseAuth.instance.currentUser;
+            Navigator.pushNamedAndRemoveUntil(
+                context, MainPage.Id, (route) => false);
+          }
+
+          //
+          // if (snapshot.value["accountStatus"] == "Banned") {
+          //   Navigator.pushNamedAndRemoveUntil(
+          //       context, UserStatusScreen.Id, (route) => false);
+          // } else if (snapshot.value["accountStatus"] == "Pending") {
+          //   Navigator.pushNamedAndRemoveUntil(
+          //       context, UserStatusScreenPending.Id, (route) => false);
+          // }
+          // else {
+          //   if (snapshot.value["vehicle_details"] != null) {
+          //     currentFirebaseUser = FirebaseAuth.instance.currentUser;
+          //     Navigator.pushNamedAndRemoveUntil(
+          //         context, MainPage.Id, (route) => false);
+          //   } else {
+          //     Navigator.pushNamedAndRemoveUntil(
+          //         context, VehicleInfo.Id, (route) => false);
+          //   }
+          // }
+
+
         } else {
           //check error and display message
           Navigator.pop(context);
@@ -106,24 +138,32 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     child: Stack(
                       children: <Widget>[
+
                         Container(
-                          padding: EdgeInsets.fromLTRB(15.0, 30.0, 0.0, 0.0),
-                          child: Text(
-                            'taXy',
-                            style:
-                            GoogleFonts.lobster(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                          //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:<Widget> [
+                              Text(
+                                'GO',
+                                style:
+                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                              ),
+                              Text(
+                                '2',
+                                style:
+                                GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                              ),
+                              Text(
+                                'GO',
+                                style:
+                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                              ),
+                            ],
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(140.0, 40.0, 0.0, 0.0),
-                          child: Text(
-                            '.',
-                            style: TextStyle(
-                                fontSize: 80.0,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFff6f00)),
-                          ),
-                        )
+
+
                       ],
                     ),
                   ),
@@ -145,6 +185,9 @@ class _LoginPageState extends State<LoginPage> {
                               children: <Widget>[
                                 TextField(
                                   controller: emailController,
+                                  inputFormatters:[
+                                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z00-9@.]')),
+                                  ],
                                   keyboardType: TextInputType.emailAddress,
                                   decoration: getInputDecorationLogin('Email address',Icon(Icons.email)),
                                   style: f_font_text_Input,

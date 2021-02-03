@@ -301,3 +301,24 @@ final tabBoxDecorations = BoxDecoration(
 
 final vType_Default_Orange = GoogleFonts.roboto(
     fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xfff57f17));
+
+// InputDecoration imageInputDecoration(String labelText) {
+//   return InputDecoration(
+//     labelText: labelText,
+//     labelStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 12),
+//     hintStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 12),
+//     prefixIcon: Icon(Icons.done),
+//     border: new OutlineInputBorder(
+//       borderRadius: const BorderRadius.all(
+//         Radius.circular(2.0),
+//       ),
+//       borderSide: new BorderSide(
+//         color: BrandColors.colorPink,
+//         width: 1.0,
+//       ),
+//     ),
+//   );
+// }
+//
+// final f_font_text_Input_image =
+// GoogleFonts.roboto(color: Colors.black87, fontSize: 12);

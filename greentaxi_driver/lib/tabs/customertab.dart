@@ -48,6 +48,14 @@ class _CustomerTabState extends State<CustomerTab> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    customerList = null;
+  }
+
+
+  @override
   void initState(){
     // TODO: implement initState
     CustomerRepository().filterData(currentFirebaseUser.uid).then((value) => {

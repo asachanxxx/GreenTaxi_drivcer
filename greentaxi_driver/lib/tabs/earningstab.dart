@@ -10,6 +10,7 @@ import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
+import 'package:greentaxi_driver/widgets/TaxiButtonSmall.dart';
 import 'package:provider/provider.dart';
 
 class EarningsTab extends StatefulWidget {
@@ -92,9 +93,9 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _textTodayEarnings(),
+                            Expanded(child: _textTodayEarnings()),
                             SizedBox(width: 10,),
-                            _textTodayCommission(),
+                            Expanded(child: _textTodayCommission()),
                            ],
                         ),
                         SizedBox(height: 15),
@@ -133,6 +134,9 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                         ),
                       ],
                     ),
+
+
+
                   )),
               SizedBox(height: 10,),
               ///Summary *************************************************************************************************************
@@ -160,21 +164,24 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                           ],
                         ),
                         SizedBox(height: 15),
-                        TaxiButton(
+                        TaxiButtonSmallWithSize(
                           title: "Payment Summary(ගෙවුම් සාරාංශය)",
                           color:Color(0xFFff6f00),
+                          fontSize: 14,
                           onPress: () async {
                           },
                         ),
-                        TaxiButton(
+                        TaxiButtonSmallWithSize(
                           title: "Monthly Summary(මාසික සාරාංශය)",
                           color:Color(0xFFff6f00),
+                          fontSize: 14,
                           onPress: () async {
                           },
                         ),
-                        TaxiButton(
+                        TaxiButtonSmallWithSize(
                           title: "Total Summary(සම්පූර්ණ සාරාංශය)",
                           color:Color(0xFFff6f00),
+                          fontSize: 14,
                           onPress: () async {
                           },
                         ),

@@ -56,26 +56,6 @@ class _MainPageState extends State<MainPage>
     super.dispose();
   }
 
-  //AppLifecycleState _notification;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.paused:
-        print('paused state');
-        break;
-      case AppLifecycleState.resumed:
-        print('resumed state');
-        break;
-      case AppLifecycleState.inactive:
-        print('inactive state');
-        break;
-      case AppLifecycleState.detached:
-        // TODO: Handle this case.
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

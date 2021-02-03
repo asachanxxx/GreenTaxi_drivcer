@@ -185,7 +185,7 @@ class NotificationDialog extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => NewTripPage(
-                tripDetails: tripDetails,
+                tripDetails: tripDetails,restartRide: false,
               ),
             ));
       } else if (thisRideID == 'cancelled') {

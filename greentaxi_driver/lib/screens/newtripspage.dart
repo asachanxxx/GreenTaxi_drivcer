@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:greentaxi_driver/helpers/mapkithelper.dart';
 import 'package:greentaxi_driver/models/directionDetails.dart';
 import 'package:greentaxi_driver/models/paymenthistory.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/CollectPaymentDialog.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
@@ -21,10 +23,13 @@ import 'package:url_launcher/url_launcher.dart';
 class NewTripPage extends StatefulWidget {
   static const String Id = 'newtrippage';
   final TripDetails tripDetails;
-  NewTripPage({this.tripDetails});
+  final bool restartRide;
+  NewTripPage({this.tripDetails, this.restartRide});
   @override
   _NewTripPageState createState() => _NewTripPageState();
 }
+
+enum DistanceType { Miles, Kilometers }
 
 class _NewTripPageState extends State<NewTripPage> {
   GoogleMapController rideMapController;
@@ -43,42 +48,65 @@ class _NewTripPageState extends State<NewTripPage> {
 
   var geoLocator = Geolocator();
   var locationOptions =
-      LocationOptions(accuracy: LocationAccuracy.bestForNavigation);
+      LocationOptions(accuracy: LocationAccuracy.bestForNavigation,distanceFilter: 1,timeInterval: 1);
 
   BitmapDescriptor movingMarkerIcon;
-
   Position myPosition;
-
   String status = 'init';
-
-  String durationString = '';
-
+  String durationString = '0';
+  String DistanceString = '0';
   bool isRequestingDirection = false;
-
   String buttonTitle = 'Drive to Customer';
-
   Color buttonColor = BrandColors.colorGreen;
-
   Timer timer;
-
   int durationCounter = 0;
+  var timeBaseDistance =0.0;
+
+  double cumDistance = 0;
+  double cumDistanceGro = 0;
+  var latitudex = "";
+  var longitudex = "";
+  var speedx = "";
+  var timestampx = "";
+  var accuracyx = "0";
+  var distancex = "";
+  var oldPositionLatlng;
+  var oldTime;
 
 
+  String GetTimeString(DateTime dateTime){
+    return dateTime.hour.toString() + ":" + dateTime.minute.toString()  + ":" + dateTime.second.toString() + ":" + dateTime.microsecond.toString();
+  }
 
-  void getLocationUpdates() {
-    /*
+
+  double CalDistance(Position pos1, Position pos2, DistanceType type){
+    double R = (type == DistanceType.Miles) ? 3960 : 6371;
+    double dLat = this.toRadian(pos2.latitude - pos1.latitude);
+    double dLon = this.toRadian(pos2.longitude - pos1.longitude);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(this.toRadian(pos1.latitude)) * cos(this.toRadian(pos2.latitude)) *
+            sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * asin(min(1, sqrt(a)));
+    double d = R * c;
+    return d;
+  }
+
+  double toRadian(double val)
+  {
+    return (pi / 180) * val;
+  }
+
+  /*
     * The technology behind this is that if the map kit will calculate the rotations according to the given lat langs . so if we give lat langs too far away
     * this calculation will not give us a correct heading direction. so fo that we use old position just before we been and set it in to
     *  -- oldPosition
     * Variable. so oldPosition always contain before position that we was and that was so short. so the heading will be calculated as the lat lng changes
     * */
+  void getLocationUpdates() {
     LatLng oldPosition = LatLng(0, 0);
 
-    /*
-    We use getPositionStream to get the location updates frequently. so every time the stream updated by the Firebase pos will be updated
-    * */
     ridePositionStream = Geolocator
-        .getPositionStream()
+        .getPositionStream(desiredAccuracy:LocationAccuracy.best,distanceFilter: 1)
         .listen((Position position) {
       myPosition = position;
       currentPosition = position;
@@ -104,15 +132,34 @@ class _NewTripPageState extends State<NewTripPage> {
 
         _markers.removeWhere((marker) => marker.markerId.value == 'moving');
         _markers.add(movingMaker);
+
+        var loc = position;
+        latitudex = loc.latitude.toString();
+        longitudex = loc.longitude.toString();
+        speedx = loc.speed.toString();
+        timestampx = GetTimeString(loc.timestamp);
+        accuracyx = loc.accuracy.toString();
+
       });
+      ///Mechanical GPS Calculations
+      if(oldPositionLatlng != null) {
+        var distance = CalDistance(
+            position, oldPositionLatlng, DistanceType.Kilometers);
+        cumDistance += distance;
+        distancex = distance.toStringAsFixed(2);
+        var geoLocatorDistance =  Geolocator.distanceBetween(oldPosition.latitude, oldPosition.longitude, position.latitude, position.longitude);
+        geoLocatorDistance = geoLocatorDistance/1000;
+        cumDistanceGro += geoLocatorDistance;
+        print("Stats: ${position.latitude.toString()} |${position.longitude.toString()} |${oldPosition.latitude.toString()} |${oldPosition.longitude.toString()}|    $distancex | ${cumDistance.toStringAsFixed(4)} | ${geoLocatorDistance.toStringAsFixed(4)}| $accuracyx| $timestampx ");
+      }
 
       /*
       This will always update our current positions to old position so we can calculate the Rotation of the Marker
       * */
+      oldTime = position.timestamp;
+      oldPositionLatlng = position;
       oldPosition = pos;
-
       updateTripDetails();
-
       Map locationMap = {
         'latitude': myPosition.latitude.toString(),
         'longitude': myPosition.longitude.toString(),
@@ -141,15 +188,12 @@ class _NewTripPageState extends State<NewTripPage> {
     }
   }
 
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     //print("NewTripPage  tripDetails ${tripDetails.rideID}");
-
-
-
-
     acceptTrip();
   }
 
@@ -177,7 +221,7 @@ class _NewTripPageState extends State<NewTripPage> {
               rideMapController = controller;
 
               setState(() {
-                mapPaddingBottom = (Platform.isIOS) ? 255 : 260;
+                mapPaddingBottom = (Platform.isIOS) ? 255 : 290;
               });
 
               var currentLatLng =
@@ -210,38 +254,46 @@ class _NewTripPageState extends State<NewTripPage> {
                   )
                 ],
               ),
-              height: Platform.isIOS ? 280 : 255,
+              height: Platform.isIOS ? 280 : 300,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      "Duration: " + durationString,
-                      style: GoogleFonts.roboto(
-                          fontSize: 14, color: BrandColors.colorAccentPurple),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          "${widget.tripDetails.riderName} On ${widget.tripDetails.riderPhone}",
-                          style: GoogleFonts.roboto(fontSize: 22),
+                          "${widget.tripDetails.riderName}",
+                          style: GoogleFonts.roboto(fontSize: 20 ,color: Color(0xFFe65100),fontWeight: FontWeight.bold),
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(right: 10),
-                          child: Icon(Icons.call),
+                        GestureDetector(
+                          onTap: (){
+                            launch("tel://${widget.tripDetails.riderPhone}");
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10),
+                            child: Icon(Icons.call),
+                          ),
                         ),
                       ],
                     ),
+                    SizedBox(height: 2,),
+                    Text(
+                      "${widget.tripDetails.riderPhone}",
+                      style: GoogleFonts.roboto(fontSize: 15),
+                    ),
+                    SizedBox(height: 5,),
+
                     SizedBox(
-                      height: 25,
+                      height: 10,
                     ),
                     Row(
                       children: <Widget>[
+                        SizedBox(
+                          width: 2,
+                        ),
                         Image.asset(
                           'images/pickicon.png',
                           height: 16,
@@ -254,7 +306,31 @@ class _NewTripPageState extends State<NewTripPage> {
                           child: Container(
                             child: Text(
                               widget.tripDetails.pickupAddress,
-                              style: GoogleFonts.roboto(fontSize: 18),
+                              style: GoogleFonts.roboto(fontSize: 15 , fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Image.asset(
+                          'images/desticon.png',
+                          height: 20,
+                          width: 20,
+                        ),
+                        SizedBox(
+                          width: 18,
+                        ),
+                        Expanded(
+                          child: Container(
+                            child: Text(
+                              widget.tripDetails.destinationAddress,
+                              style: GoogleFonts.roboto(fontSize: 15, fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -264,30 +340,115 @@ class _NewTripPageState extends State<NewTripPage> {
                     SizedBox(
                       height: 15,
                     ),
+                    BrandDivider(),
+                    SizedBox(
+                      height: 5,
+                    ),
+
                     Row(
                       children: <Widget>[
-                        Image.asset(
-                          'images/desticon.png',
-                          height: 16,
-                          width: 16,
+                        Text(
+                          "DAT: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
                         ),
-                        SizedBox(
-                          width: 18,
+                        Text(
+                          '${distancex != null ? distancex + "KM" : ""}' ,
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
                         ),
-                        Expanded(
-                          child: Container(
-                            child: Text(
-                              widget.tripDetails.destinationAddress,
-                              style: GoogleFonts.roboto(fontSize: 18),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                        SizedBox(width: 5,),
+                        Text(
+                          "DCU: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '${cumDistance != null ? cumDistance.toStringAsFixed(2)  + " KM": ""}' ,
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 5,),
+                        Text(
+                          "GCU: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '${cumDistanceGro != null ? cumDistanceGro.toStringAsFixed(2)  + " KM": ""}',
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
+                        ),
+                        //DistanceString
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "TIME: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '${TimeSpent != null ? TimeSpent : ""}' ,
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 5,),
+                        Text(
+                          "ACC: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '${accuracyx != null ? accuracyx : ""}',
+                          style: GoogleFonts.roboto(
+                              fontSize: 14, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     SizedBox(
-                      height: 25,
+                      height: 5,
                     ),
+                    BrandDivider(),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "Duration: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 15, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '$durationString',
+                          style: GoogleFonts.roboto(
+                              fontSize: 15, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 10,),
+                        Text(
+                          "Distance: ",
+                          style: GoogleFonts.roboto(
+                              fontSize: 15, color: Color(0xFF3e2723), fontWeight: FontWeight.normal),
+                        ),
+                        Text(
+                          '$DistanceString',
+                          style: GoogleFonts.roboto(
+                              fontSize: 15, color:  Color(0xFF3e2723),fontWeight: FontWeight.bold),
+                        ),
+                        //DistanceString
+                      ],
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    BrandDivider(),
+                    SizedBox(
+                      height: 5,
+                    ),
+
+
                     TaxiButton(
                       title: buttonTitle,
                       color: buttonColor,
@@ -333,6 +494,10 @@ class _NewTripPageState extends State<NewTripPage> {
                           rideRef.child('status').set('ontrip');
 
                           setState(() {
+                            cumDistance = 0.0;
+                            distancex = "0.00";
+                            cumDistanceGro = 0.0;
+                            TimeSpent = "0.00";
                             buttonTitle = 'END TRIP';
                             buttonColor = Colors.red[900];
                           });
@@ -366,6 +531,7 @@ class _NewTripPageState extends State<NewTripPage> {
   }
 
   void acceptTrip() {
+    print("Inside acceptTrip");
     paymentDetails = PaymentDetails();
     if (widget.tripDetails != null) {
       if (currentDriverInfo != null) {
@@ -395,12 +561,16 @@ class _NewTripPageState extends State<NewTripPage> {
             .child('drivers/${currentDriverInfo.id}');
         rideRef.child("rideId").set(rideID);
 
+
+        rideRef = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${currentDriverInfo.id}');
+        rideRef.child("inMiddleOfTrip").set("true");
+
         //Setting payment Details
         paymentDetails.pickupAddress = widget.tripDetails.pickupAddress;
         paymentDetails.destinationAddress = widget.tripDetails.destinationAddress;
         paymentDetails.rideID = widget.tripDetails.rideID;
-
-
 
       } else {
         showToast(context, "ERR_DR_002");
@@ -409,7 +579,8 @@ class _NewTripPageState extends State<NewTripPage> {
       showToast(context, "ERR_DR_001");
     }
 
-    if (appRestaredMiddleOfRide) {
+    if (widget.restartRide) {
+      print("widget.tripDetails.status  ${widget.tripDetails.status}");
       status = 'ontrip';
       setState(() {
         buttonTitle = 'END TRIP';
@@ -458,7 +629,8 @@ class _NewTripPageState extends State<NewTripPage> {
 
         setState(() {
           //This will update the duration to go in the screen with direction details realtime
-          durationString = 'you have to go: ${directionDetails.durationText}';
+          durationString = directionDetails.durationText;
+          DistanceString = directionDetails.distanceText;
         });
       } else {
         print('Direction Details are empty');
@@ -577,11 +749,22 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
+  String TimeSpent = "0:0";
   void startTimer() {
     const interval = Duration(seconds: 1);
     timer = Timer.periodic(interval, (timer) {
-      durationCounter++;
+      setState(() {
+        durationCounter++;
+        TimeSpent = ReturnTimeString(durationCounter);
+      });
     });
+  }
+
+  String ReturnTimeString(int dimespent){
+    int seconds = dimespent % 60;
+    double minutes = dimespent / 60;
+    String time = minutes.round().toString() + ":" + seconds.toString();
+    return time;
   }
 
   void endTrip() async {
@@ -615,6 +798,17 @@ class _NewTripPageState extends State<NewTripPage> {
           .child('drivers/${currentDriverInfo.id}');
       rideRef.child("newtrip").set("waiting");
 
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentDriverInfo.id}');
+      rideRef.child("rideId").set("");
+
+
+      rideRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${currentDriverInfo.id}');
+      rideRef.child("inMiddleOfTrip").set("false");
+
       ///This will cumilatly increment the earnings of the driver
       topUpEarnings(fares);
 
@@ -643,6 +837,7 @@ class _NewTripPageState extends State<NewTripPage> {
       showToast(context, "ERR_DR_005");
     }
   }
+
   void updateCashFlows(TripDetails tripDetailsx) {
     DatabaseReference earningsRef = FirebaseDatabase.instance
         .reference()

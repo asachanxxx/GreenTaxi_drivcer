@@ -79,5 +79,40 @@ query.once("value", function(snapshot) {
             'rating': 5,
           };
 
+AccountStatus
+=============
+DataEntity: accountStatus:
+"NoVehicleDet"
+"NoImageDet"
+"Pending"
+"Active"
+"Banned"
 
-accountStatus: "Pending","Active" , "TempBlock" , "Banned"
+Inquiry Types
+=============
+DataEntity:type
+"AccActivation"
+
+cupertino_icons: ^0.1.3
+  firebase_core: ^0.5.0+1
+  firebase_auth: ^0.18.1+2
+  firebase_database: ^4.1.1
+  connectivity: ^2.0.0
+  google_maps_flutter: ^1.0.5
+  outline_material_icons: ^0.1.1
+  geolocator: ^6.1.13
+  http: ^0.12.2
+  provider: ^4.3.2+2
+  flutter_polyline_points: ^0.2.4
+  google_fonts: ^1.1.1
+  font_awesome_flutter: ^8.10.0
+  animated_text_kit: ^2.5.4
+  flutter_geofire: ^1.0.3
+  firebase_messaging: ^6.0.16
+  assets_audio_player: ^2.0.1+7
+  toast: ^0.1.5
+  maps_toolkit: ^1.1.0+1
+  url_launcher: ^5.7.10
+  wakelock: ^0.2.1+1
+  sms_autofill: ^1.2.6
+

@@ -101,10 +101,6 @@ class PushNotificationService {
         double destinationLat = double.parse(snapshot.value['destination']['latitude'].toString());
         double destinationLng = double.parse(snapshot.value['destination']['longitude'].toString());
 
-        // double driverLat = double.parse(snapshot.value['driver_location']['latitude'].toString());
-        // double driverLng = double.parse(snapshot.value['driver_location']['longitude'].toString());
-
-
         String destinationAddress = snapshot.value['destination_address'];
         String paymentMethod = snapshot.value['payment_method'];
         String riderName = snapshot.value['rider_name'];
@@ -146,6 +142,9 @@ class PushNotificationService {
       }
 
     });
+
+
+
   }
 
 

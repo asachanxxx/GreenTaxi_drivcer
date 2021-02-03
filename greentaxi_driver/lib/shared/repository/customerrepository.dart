@@ -8,13 +8,17 @@ class CustomerRepository {
     var checkRef = await FirebaseDatabase.instance.reference().child(
         "customers").orderByChild("driverID").equalTo(driverID).once();
     if (checkRef != null || checkRef.value != null) {
-      List<Customer> theList = new List<Customer>();
+      List<Customer> theList = [];
       //print ("Type of the checkRef  : $checkRef" );
 
-      checkRef.value.entries.forEach((snapshot) {
-        print("fullName of customer ---  ${snapshot.value["fullName"]}");
-        theList.add(Customer(snapshot.value["fullName"],snapshot.value["phoneNumber"] ,snapshot.value["driverID"],checkRef.key ));
-      });
+      if(checkRef.value != null) {
+        checkRef.value.entries.forEach((snapshot) {
+          print("fullName of customer ---  ${snapshot.value["fullName"]}");
+          theList.add(Customer(
+              snapshot.value["fullName"], snapshot.value["phoneNumber"],
+              snapshot.value["driverID"], checkRef.key));
+        });
+      }
       return theList;
     }
     return null;

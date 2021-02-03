@@ -60,3 +60,5 @@ bool vehicleInfoCompleteStatus;
 LatLng posError = LatLng(6.877133555388284, 79.98983549839619);
 String currentTab = "Home";
 
+String userProfilePath = "images/drivers/profilePics";
+String userDocumentPath = "images/drivers/docpath";

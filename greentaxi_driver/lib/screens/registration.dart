@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
@@ -37,6 +38,7 @@ class _CustomRegiterState extends State<RiderRegister> {
   final phonecontoller = TextEditingController();
   final emailcontoller = TextEditingController();
   final passwordcontoller = TextEditingController();
+  final nicontoller = TextEditingController();
 
 
   void registerUser(text1, text2) async {
@@ -60,7 +62,8 @@ class _CustomRegiterState extends State<RiderRegister> {
           'email': emailcontoller.text,
           'phoneNumber': phonecontoller.text,
           'pass': passwordcontoller.text,
-          'accountStatus': "Pending",
+          'nic': nicontoller.text,
+          'accountStatus': "NoVehicleDet",
           'datetime': DateTime.now().toString()
 
         };
@@ -98,24 +101,31 @@ class _CustomRegiterState extends State<RiderRegister> {
             Container(
             child: Stack(
                 children: <Widget>[
-                Container(
-                padding: EdgeInsets.fromLTRB(15.0, 30.0, 0.0, 0.0),
-            child: Text(
-              'taXy',
-              style:
-              GoogleFonts.lobster(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(140.0, 40.0, 0.0, 0.0),
-            child: Text(
-              '.',
-              style: TextStyle(
-                  fontSize: 80.0,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFff6f00)),
-            ),
-          )
+
+                  Container(
+                    //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:<Widget> [
+                        Text(
+                          'GO',
+                          style:
+                          GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                        ),
+                        Text(
+                          '2',
+                          style:
+                          GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                        ),
+                        Text(
+                          'GO',
+                          style:
+                          GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                        ),
+                      ],
+                    ),
+                  ),
+
           ],
         ),
       ),
@@ -135,7 +145,10 @@ class _CustomRegiterState extends State<RiderRegister> {
                           children: <Widget>[
                             TextField(
                               controller: fullnamecontoller,
-                              keyboardType: TextInputType.text,
+                              keyboardType: TextInputType.name,
+                              inputFormatters:[
+                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                              ],
                               decoration: getInputDecorationRegister('Full Name',Icon(Icons.keyboard)),
                               style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
                             ),
@@ -143,12 +156,18 @@ class _CustomRegiterState extends State<RiderRegister> {
                             TextField(
                               controller: emailcontoller,
                               keyboardType: TextInputType.emailAddress,
+                              inputFormatters:[
+                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z@.]')),
+                              ],
                               decoration: getInputDecorationRegister('E-Mail',Icon(Icons.email)),
                               style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
                             ),
                             SizedBox(height: 10,),
                             TextField(
                               controller: phonecontoller,
+                              inputFormatters:[
+                                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                              ],
                               keyboardType: TextInputType.phone,
                               decoration: getInputDecorationRegister('Mobile No',Icon(Icons.phone)),
                               style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
@@ -156,8 +175,17 @@ class _CustomRegiterState extends State<RiderRegister> {
                             SizedBox(height: 10,),
                             TextField(
                               controller: passwordcontoller,
-                              obscureText: debugInstrumentationEnabled,
+                              obscureText: true,
                               decoration: getInputDecorationRegister('Password',Icon(Icons.vpn_key_sharp)),
+                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
+                            ),
+                            SizedBox(height: 10,),
+                            TextField(
+                              controller: nicontoller,
+                              inputFormatters:[
+                                FilteringTextInputFormatter.allow(RegExp(r'[0-9vxVX]')),
+                              ],
+                              decoration: getInputDecorationRegister('ID Card No',Icon(Icons.card_membership)),
                               style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
                             ),
                             SizedBox(height: 30,),
@@ -169,36 +197,45 @@ class _CustomRegiterState extends State<RiderRegister> {
                                     r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                                     .hasMatch(emailcontoller.text);
 
+                                //print("isNicValid(0778151151) ${isNicValid("77815115115V")}");
+
                                 //Check network aialability
                                 var connectivity = await Connectivity()
                                     .checkConnectivity();
                                 if(connectivity != ConnectivityResult.mobile && connectivity != ConnectivityResult.wifi){
                                   showSnackBar(
-                                      'Oops! seems you are offline.');
+                                      'It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
                                   return;
                                 }
-
-
-                                if (fullnamecontoller.text.length < 3) {
+                                if (fullnamecontoller.text.length < 8) {
                                   showSnackBar(
-                                      'Oops! full name must be more than 3 characters.');
-                                  return;
-                                }
-                                if (passwordcontoller.text.length < 6) {
-                                  showSnackBar(
-                                      'Oops! password must be at least 6 characters.');
-                                  return;
-                                }
-                                if (phonecontoller.text.length != 10) {
-                                  showSnackBar(
-                                      'Oops! Phone number must be 10 characters.');
+                                      'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
                                   return;
                                 }
                                 if (!emailValid) {
                                   showSnackBar(
-                                      'Oops! Invalid E-Mail address.');
+                                      'Invalid E-Mail address.(කරුණාකර වලංගු ඊමේල් ලිපිනයක් ඇතුලත් කරන්න )');
                                   return;
                                 }
+                                if (phonecontoller.text.length != 10) {
+                                  showSnackBar(
+                                      'Phone number must be 10 characters.(දුරකථන අංකය අක්ෂර 10 ක් විය යුතුය)');
+                                  return;
+                                }
+
+                                if (passwordcontoller.text.length < 6) {
+                                  showSnackBar(
+                                      'The password must be at least 6 characters.(මුරපදය අවම වශයෙන් අක්ෂර 6 ක් විය යුතුය)');
+                                  return;
+                                }
+                                if (!isNicValid(nicontoller.text.trim())) {
+                                  showSnackBar(
+                                      'invalid National Id card number.(කරුණාකර වලංගු ජාතික හැඳුනුම්පත් අංකයක්  ඇතුලත් කරන්න)');
+                                  return;
+                                }
+
+
+
                                 registerUser(emailcontoller.text,
                                     passwordcontoller.text);
                               },
@@ -230,5 +267,22 @@ class _CustomRegiterState extends State<RiderRegister> {
       ),
     );
   }
+
+  bool isNicValid(String nic){
+    print("nic: - $nic  Length : ${nic.length}");
+
+    bool nicValid = false;
+    if(nic.length <=10) {
+      nicValid = RegExp(
+          r"^(?:[+0]9)?[0-9]{9}[V,X,v,x]$")
+          .hasMatch(nic);
+    }else{
+      nicValid = RegExp(
+          r"^(?:[+0]9)?[0-9]{12}$")
+          .hasMatch(nic);
+    }
+    return nicValid;
+  }
+
 }
 

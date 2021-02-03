@@ -1,34 +1,32 @@
 
-import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
+import 'package:greentaxi_driver/screens/login.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
-import 'package:greentaxi_driver/screens/registration.dart';
 import 'package:greentaxi_driver/screens/vehicleinfo.dart';
-import 'package:greentaxi_driver/styles/styles.dart';
+import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 
-class UserStatusScreen extends StatefulWidget {
+class UserStatusScreenPending extends StatefulWidget {
 
-  static const String Id = 'userstatus';
+  static const String Id = 'userstatuspending';
 
   @override
   _UserStatusScreenState createState() => _UserStatusScreenState();
 }
 
-class _UserStatusScreenState extends State<UserStatusScreen> {
+class _UserStatusScreenState extends State<UserStatusScreenPending> {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  void showSnackBar(String title){
+  void showSnackBar(String title) {
     final snackbar = SnackBar(
-      content: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
+      content: Text(
+        title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
     );
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
@@ -40,35 +38,31 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
   var passwordController = TextEditingController();
 
   void login() async {
-
     //show please wait dialog
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (BuildContext context) => ProgressDialog(status: 'Logging you in',),
+      builder: (BuildContext context) =>
+          ProgressDialog(status: 'Logging you in',),
     );
 
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text
-    ).catchError((ex){
-
+    ).catchError((ex) {
       //check error and display message
       Navigator.pop(context);
       //PlatformException thisEx = ex;
       showSnackBar(ex.message);
-
     });
-
-
-
     User user = userCredential.user;
-    if(user != null){
+    if (user != null) {
       // verify login
-      DatabaseReference userRef = FirebaseDatabase.instance.reference().child('drivers/${user.uid}');
+      DatabaseReference userRef = FirebaseDatabase.instance.reference().child(
+          'drivers/${user.uid}');
       userRef.once().then((DataSnapshot snapshot) {
-        if(snapshot.value != null) {
+        if (snapshot.value != null) {
           if (snapshot.value["vehicle_details"] != null) {
             currentFirebaseUser = FirebaseAuth.instance.currentUser;
             Navigator.pushNamedAndRemoveUntil(
@@ -77,19 +71,18 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
             Navigator.pushNamedAndRemoveUntil(
                 context, VehicleInfo.Id, (route) => false);
           }
-        }else{
+        } else {
           //check error and display message
           Navigator.pop(context);
           showSnackBar("Oops! this account has no Associated driver account");
         }
-
       });
       HelperMethods.determinePosition().then((value) {
         print("currentpossitionCheck $value");
       });
-
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +93,7 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
             padding: EdgeInsets.only(top: 20, left: 20, right: 20),
             child: SingleChildScrollView(
               child: Column(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     child: Stack(
                       children: <Widget>[
@@ -110,21 +103,27 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                           //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children:<Widget> [
+                            children: <Widget>[
                               Text(
                                 'GO',
                                 style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                GoogleFonts.rubik(fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                               Text(
                                 '2',
                                 style:
-                                GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                                GoogleFonts.rubik(fontSize: 80.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF424242)),
                               ),
                               Text(
                                 'GO',
                                 style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                GoogleFonts.rubik(fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                             ],
                           ),
@@ -140,8 +139,8 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                     ),
                     child: Column(
                       children: <Widget>[
-                        SizedBox(height:10,),
-                        Text('ඔබගේ ගිණුම තාවකාලිකව අක්‍රීය කර ඇත',
+                        SizedBox(height: 10,),
+                        Text('Go2Go වෙත සාදරයෙන් පිළිගනිමු.',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.roboto(
                               fontSize: 20, fontWeight: FontWeight.bold),
@@ -151,10 +150,12 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                           child: Column(
                             children: <Widget>[
                               SizedBox(height: 40,),
-                              Text('ඔබගේ ගිණුම අක්‍රීය කර ඇත. එබැවින් ඔබට පුරනය(login) වීමට නොහැකි වනු ඇත. කරුණාකර ගිණුමක් අක්‍රිය වීමට හේතු බොහෝමයක් ඇති බව මතක තබා ගන්න, අපි සියලු කරුණු ඉතා ප්‍රවේශමෙන් සොයා බලමු. මේ අතර, වැඩි විස්තර සඳහා අපි පසුව ඔබ හා සම්බන්ධ වෙමු',
+                              Text(
+                                'ඔබ දැනටමත් Go2GO සමඟ ගිණුමක් නිර්මාණය කර ඇති නමුත් ගිණුම තවමත් සක්‍රිය කර නොමැත. අපි ඔබේ තොරතුරු සකසා ඔබගේ ගිණුම සක්‍රිය කරන තුරු කරුණාකර රැඳී සිටින්න. සක්‍රිය කිරීමෙන් පසු ඔබට ගිණුමට ලොග් වී සියලු අංග භුක්ති විඳිය හැකිය.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.roboto(
-                                    fontSize: 15, fontWeight: FontWeight.normal),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.normal),
                               ),
                               SizedBox(height: 40,),
                               Row(
@@ -162,13 +163,16 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                                   Text('Contact        ',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.roboto(
-                                        fontSize: 15, fontWeight: FontWeight.bold),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Expanded(
                                     child: Text('+94 011518548 ',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.roboto(color: Color(0xFFff6f00),
-                                          fontSize: 15, fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.roboto(
+                                          color: Color(0xFFff6f00),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
@@ -178,13 +182,16 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                                   Text('   Hotline  ',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.roboto(
-                                        fontSize: 15, fontWeight: FontWeight.bold),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Expanded(
                                     child: Text('  +94 0778151151',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.roboto(color: Color(0xFFff6f00),
-                                          fontSize: 15, fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.roboto(
+                                          color: Color(0xFFff6f00),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
@@ -194,37 +201,48 @@ class _UserStatusScreenState extends State<UserStatusScreen> {
                                   Text('    E-Mail  ',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.roboto(
-                                        fontSize: 15, fontWeight: FontWeight.bold),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   Expanded(
                                     child: Text('inquery@gotogo.com',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.roboto(color: Color(0xFFff6f00),
-                                          fontSize: 15, fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.roboto(
+                                          color: Color(0xFFff6f00),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
+                              SizedBox(height: 20,),
+                              TaxiButton(
+                                title: "Log Off",
+                                color: Color(0xFFff6f00),
+                                onPress: (){
+                                  UserRepository.signOut();
+                                  Navigator.pushNamedAndRemoveUntil(context, LoginPage.Id, (route) => false);
+                                },
+                              ),
+                              TaxiButton(
+                                title: "Inform Go2Go",
+                                color: Color(0xFFff6f00),
+                                onPress: () async{
+                                    DatabaseReference dref = FirebaseDatabase.instance.reference().child("inquiry").push();
+                                    Map inqueryMap = {
+                                      'userId':currentFirebaseUser.uid,
+                                      'type':"AccActivation",
+                                      'des':'Request to activate account'
+                                    };
+                                    dref.set(inqueryMap);
+                                    dref = null;
+                                    showSnackBar("your inquiry has been submitted successfully.we will get back to you shortly. (ඔබේ ප්‍රශ්නය සාර්ථකව ඉදිරිපත් කර ඇත. අපි ඉක්මනින් ඔබව සම්බන්දකරගන්නෙමු )");
+                                },
+                              )
 
                             ],
                           ),
                         ),
-
-                        // Row(
-                        //   // crossAxisAlignment: CrossAxisAlignment.center,
-                        //   mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
-                        //   children:<Widget> [
-                        //     Text('Don\'t have an account,' ,style: f_font_16_Normal_Black100,),
-                        //     FlatButton(
-                        //         onPressed: (){
-                        //           Navigator.pushNamedAndRemoveUntil(context, RiderRegister.Id, (route) => false);
-                        //         },
-                        //         child: Text('Sign Up here' ,style: GoogleFonts.roboto(fontSize: 17,fontWeight: FontWeight.bold, color:  Color(0xFFff6f00)),)
-                        //     ),
-                        //   ],
-                        // ),
-                        //
-
                         SizedBox(height: 160,),
                       ],
                     ),

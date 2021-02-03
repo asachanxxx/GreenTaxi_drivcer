@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/helpers/pushnotificationservice.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
+import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/screens/newtripspage.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/AvailabilityButton.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
@@ -43,9 +46,11 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   bool isAvailable = false;
   bool isOnlineStatus = false;
   bool cancelLocationUpdate = false;
-
+  bool _tryAgain = false;
   double earnings = 0.0;
 
+  var inMiddleOfTrip = false;
+  var existingRideId = "";
   // double getEarning(){
   //    earnings = 0.0;
   // }
@@ -85,6 +90,17 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           earnings = double.tryParse(snapshot.value["earnings"].toString());
         }
 
+        if(snapshot.value["inMiddleOfTrip"] != null){
+          print("inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}" );
+          inMiddleOfTrip =  snapshot.value["inMiddleOfTrip"].toString().toLowerCase() == 'true';
+        }
+        if(snapshot.value["rideId"] != null){
+          print("existingRideId  ${snapshot.value["rideId"].toString()}" );
+          existingRideId = snapshot.value["rideId"];
+        }
+        if(inMiddleOfTrip){
+          restartRide();
+        }
 
       }
     });
@@ -108,6 +124,113 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
       });
     }
   }
+
+
+  void checkAvailablity(context, String rideID) {
+
+    DatabaseReference rideRef = FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
+    rideRef.once().then((DataSnapshot snapshot){
+
+      // Navigator.pop(context);
+      print("availabilityButtonPress snapshot ========================================================================================> $snapshot");
+      if(snapshot.value != null){
+
+        double pickupLat = double.parse(snapshot.value['location']['latitude'].toString());
+        double pickupLng = double.parse(snapshot.value['location']['longitude'].toString());
+        String pickupAddress = snapshot.value['pickup_address'].toString();
+
+        double destinationLat = double.parse(snapshot.value['destination']['latitude'].toString());
+        double destinationLng = double.parse(snapshot.value['destination']['longitude'].toString());
+
+        String destinationAddress = snapshot.value['destination_address'];
+        String paymentMethod = snapshot.value['payment_method'];
+        String riderName = snapshot.value['rider_name'];
+        String riderPhone = snapshot.value['rider_phone'];
+
+        TripDetails tripDetails = TripDetails();
+
+        tripDetails.rideID = rideID;
+        tripDetails.pickupAddress = pickupAddress;
+        tripDetails.destinationAddress = destinationAddress;
+        tripDetails.pickup = LatLng(pickupLat, pickupLng);
+        tripDetails.destination = LatLng(destinationLat, destinationLng);
+        //tripDetails.driverLocation = LatLng(pos.latitude, pos.longitude);
+        tripDetails.paymentMethod = paymentMethod;
+        tripDetails.riderName = riderName;
+        tripDetails.riderPhone = riderPhone;
+        tripDetails.status = snapshot.value['status'];
+
+        if(snapshot.value['ownDriver'] != null){
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        }else if (snapshot.value['ownDriver']  == "system") {
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        }else{
+          tripDetails.commissionedDriverId = snapshot.value['ownDriver'] ;
+          tripDetails.commissionApplicable = true;
+        }
+
+        print("tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
+
+        Navigator.pop(context);
+
+        HelperMethods.disableHomTabLocationUpdates();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  NewTripPage(
+                    tripDetails: tripDetails,restartRide: true,
+                  ),
+            ));
+      }
+
+    });
+  }
+
+
+  restartRide() async {
+    print("On _checkWifi inMiddleOfTrip = $inMiddleOfTrip  existingRideId = $existingRideId");
+    if(inMiddleOfTrip) {
+      showAlert(context,existingRideId);
+    }
+  }
+
+  void showAlert(BuildContext context , String existingRideIdx) {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) =>
+            AlertDialog(
+              title: Center(child: Column(
+                children: <Widget>[
+                  Icon(Icons.home, color: Colors.black54, size: 80,),
+                  SizedBox(height: 20,),
+                  Text('Unfinished ride detected.',
+                    style: GoogleFonts.roboto(fontSize: 20),),
+                ],
+              )),
+              content: Text(
+                "The system close in middle of a ride. please press ok to continue with the ride!",
+                style: GoogleFonts.roboto(fontSize: 17),),
+              actions: <Widget>[
+                Center(
+                  child: FlatButton(
+                    child: Text("OK"),
+                    onPressed: () {
+                      checkAvailablity(context, existingRideIdx);
+                    },
+                  ),
+                ),
+              ],
+            )
+    );
+  }
+
+
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -115,6 +238,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     currentTab = "Home";
     getCurrentPosition();
     getCurrentDriverInfo();
+
     print("initState->isOnlineStatus  $isOnlineStatus");
   }
 
@@ -352,6 +476,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/onlineStatus');
     tripRequestRef.set('offline');
+    setState(() {
+      cancelLocationUpdate = true;
+    });
 
     //tripRequestRef.set('offline');
     tripRequestRef.onDisconnect();
@@ -370,8 +497,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   void getLocationUpdates() {
     print(" getLocationUpdates Status Update canc elLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
     homeTabPositionStream = Geolocator
-        .getPositionStream(desiredAccuracy: LocationAccuracy.bestForNavigation,distanceFilter: 4,forceAndroidLocationManager: true)
+        .getPositionStream(desiredAccuracy: LocationAccuracy.bestForNavigation,distanceFilter: 2)
         .listen((Position position) {
+      print(" getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
 
       currentPosition = position;
       if (isAvailable) {

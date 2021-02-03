@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/screens/customerfunctions.dart';
+import 'package:greentaxi_driver/screens/driverimagedetails.dart';
 import 'package:greentaxi_driver/screens/login.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/screens/newtripspage.dart';
@@ -13,7 +14,9 @@ import 'package:greentaxi_driver/screens/registration.dart';
 import 'package:greentaxi_driver/screens/restartscreen.dart';
 import 'package:greentaxi_driver/screens/startup.dart';
 import 'package:greentaxi_driver/screens/testing.dart';
+import 'package:greentaxi_driver/screens/uploadimage.dart';
 import 'package:greentaxi_driver/screens/userstatusscreen.dart';
+import 'package:greentaxi_driver/screens/userstatusscreenpending.dart';
 import 'package:greentaxi_driver/screens/vehicleinfo.dart';
 import 'package:greentaxi_driver/screens/verificationcode.dart';
 import 'package:greentaxi_driver/shared/repository/companyrepository.dart';
@@ -22,12 +25,8 @@ import 'package:wakelock/wakelock.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  FirebaseApp app;
-
-  print("Firebase.apps.length ${Firebase.apps.isEmpty}");
-  if(Firebase.apps.length<=0){
-     app = await Firebase.initializeApp(
+  try {
+    await Firebase.initializeApp(
       name: 'db2',
       options: Platform.isIOS || Platform.isMacOS
           ? FirebaseOptions(
@@ -45,149 +44,131 @@ void main() async {
         databaseURL: 'https://greentaxi-48ad5.firebaseio.com',
       ),
     );
-  }else{
-    app = Firebase.app();
+  } catch (e) {
+
   }
 
-
+  ///Assign the default firbase user
   currentFirebaseUser = FirebaseAuth.instance.currentUser;
-  Wakelock.enable();
 
-
-  /*
-  * Logic : if this there is no default driver logged in then
-  * Redirect to the login page
-  * */
+  ///Loading system settings
   systemSettings = await CompanyRepository().fetchSystemConfigurations();
 
+  print(
+      "loadTaxySystem Point 1==========================================> $currentFirebaseUser");
   if (currentFirebaseUser != null) {
-    dRoute =
-        await CompanyRepository().getNewTripStatus(currentFirebaseUser.uid);
+    ///we need to check if the current FirebaseAuth.instance.currentUser
+    /// is on the drivers node. if node we have to direct to register
+    var hasAssociateDriverAccount = await CompanyRepository()
+        .getCheckUidHasDriverAccount(currentFirebaseUser.uid);
     print(
-        "void main() $dRoute and currentFirebaseUser.uid = ${currentFirebaseUser.uid}");
-    if (dRoute != null && dRoute.trim().length >10) {
-      tripDetails = await CompanyRepository().getTripDetails(dRoute);
-    } else {
-      ///we need to check if the current FirebaseAuth.instance.currentUser
-      /// is on the drivers node. if node we have to direct to register
-      var hasAssociateDriverAccount = await CompanyRepository().getCheckUidHasDriverAccount(currentFirebaseUser.uid);
-      print("hasAssociateDriverAccount $hasAssociateDriverAccount");
-      print("hasAssociateDriverAccount Status ${hasAssociateDriverAccount["accountStatus"]}");
-      if(hasAssociateDriverAccount!= null) {
-        if(hasAssociateDriverAccount["accountStatus"] == "Banned"){
-          dRoute = 'userstatus';
-        }else {
-          ///Check if user filled out the vehicle details
-          vehicleInfoCompleteStatus =
-          await CompanyRepository().getVehicleInfoCompleteStatus(
-              currentFirebaseUser.uid);
-          print("vehicleInfoCompleteStatus $vehicleInfoCompleteStatus");
+        "loadTaxySystem hasAssociateDriverAccount==========================================> $hasAssociateDriverAccount");
+    if (hasAssociateDriverAccount != null) {
+      ///Get the status
+      var accStatus = hasAssociateDriverAccount["accountStatus"];
 
-          ///If vehicle details ok then go to main and if not go to vehicle details screen
-          if (vehicleInfoCompleteStatus) {
-            dRoute = 'main';
-          } else {
-            dRoute = 'VehicleInfoNotComplete';
-          }
-        }
-      }else{
-        ///sice this is false login or a login without driver account we log off the user
-        ///and direct to login
-        FirebaseAuth.instance.signOut();
-        dRoute = 'NotLoggedIN';
+      ///Handling the driver status
+      if (accStatus == "NoVehicleDet") {
+        dRoute = 'vehicleinfo';
       }
+      else if (accStatus == "NoImageDet") {
+        dRoute = 'driverMoreInfo';
+      }
+      else if (accStatus == "Banned") {
+        dRoute = 'userstatus';
+      }
+      else if (accStatus == "Pending") {
+        dRoute = 'userstatuspending';
+      }
+      else {
+        dRoute = 'main';
+        // ///Check if user filled out the vehicle details
+        // vehicleInfoCompleteStatus =
+        // await CompanyRepository().getVehicleInfoCompleteStatus(
+        //     currentFirebaseUser.uid);
+        // print("vehicleInfoCompleteStatus $vehicleInfoCompleteStatus");
+        // ///If vehicle details ok then go to main and if not go to vehicle details screen
+        // if (vehicleInfoCompleteStatus) {
+        //   dRoute = 'main';
+        // } else {
+        //   dRoute = 'VehicleInfoNotComplete';
+        // }
+      }
+    } else {
+      ///sice this is false login or a login without driver account we log off the user
+      ///and direct to login
+      FirebaseAuth.instance.signOut();
+      dRoute = 'NotLoggedIN';
     }
   } else {
-    dRoute = "NotLoggedIN";
+    ///This means the user is not logged in
+    dRoute = "login";
   }
 
+  Wakelock.enable();
   runApp(MyApp());
 }
+
+
+
 
 class MyApp extends StatefulWidget with WidgetsBindingObserver {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  // bool hasEngagedInARide = false;
-
-  String getScreenToLoad() {
-    print("getScreenToLoad $dRoute");
-    String returnScreen = "";
-    if (dRoute == "NotLoggedIN") {
-      returnScreen = 'login';
-    } else if (dRoute == "main") {
-      returnScreen = 'main';
-    } else if (dRoute == "VehicleInfoNotComplete") {
-      returnScreen = 'vehicleinfo';
-    } else if (dRoute.length < 10) {
-      //Rider has no uncompleted ride
-      returnScreen = 'main';
-    }else if (dRoute == "userstatus") {
-      //Rider has no uncompleted ride
-      returnScreen = 'userstatus';
-    } else {
-      returnScreen = 'restartscreen';
-    }
-    print("getScreenToLoad -> dRoute $returnScreen");
-    return returnScreen;
-  }
+class _MyAppState extends State<MyApp>  {
+  /*
+     Set default `_initialized` and `_error` state to false
+    * */
 
   @override
   initState() {
+    //loadTaxySystem();
     super.initState();
-    //print("initState -> dRoute $dRoute"); // but here It's null!
-    getScreenToLoad();
   }
-
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   super.didChangeAppLifecycleState(state);
-  //   switch (state) {
-  //     case AppLifecycleState.paused:
-  //       print('paused state');
-  //       break;
-  //     case AppLifecycleState.resumed:
-  //       print('resumed state');
-  //       break;
-  //     case AppLifecycleState.inactive:
-  //       print('inactive state');
-  //       break;
-  //   }
-  // }
 
 
   @override
   Widget build(BuildContext context) {
-    return LifeCycleManager(
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          textTheme: GoogleFonts.robotoMonoTextTheme(
-            Theme.of(context).textTheme,
+    print("dRoute =============> $dRoute");
+    /*
+    * App widget tree building here.
+    * Added only the route configs. not changes need to be done unless there is a extreme need
+    * */
+      return LifeCycleManager(
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            textTheme: GoogleFonts.robotoMonoTextTheme(
+              Theme
+                  .of(context)
+                  .textTheme,
+            ),
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        //initialRoute:(currentFirebaseUser == null)? LoginPage.Id : MainPage.Id,
-        initialRoute: getScreenToLoad(),
-        routes: {
-          MainPage.Id: (context) => MainPage(),
-          RiderRegister.Id: (context) => RiderRegister(),
-          StartUpScr.Id: (context) => StartUpScr(),
-          VehicleInfo.Id: (context) => VehicleInfo(),
-          LoginPage.Id: (context) => LoginPage(),
-          TestTheCode.Id: (context) => TestTheCode(),
-          PhoneVerification.Id: (context) => PhoneVerification(),
-          VerifyCode.Id: (context) => VerifyCode(),
-          RestartScreen.Id: (context) => RestartScreen(),
-          NewTripPage.Id: (context) => NewTripPage(),
-          CustomerFunctions.Id: (context) => CustomerFunctions(),
-          UserStatusScreen.Id: (context) => UserStatusScreen(),
+          //initialRoute:(currentFirebaseUser == null)? LoginPage.Id : MainPage.Id,
+          initialRoute:dRoute,
+          routes: {
+            MainPage.Id: (context) => MainPage(),
+            RiderRegister.Id: (context) => RiderRegister(),
+            StartUpScr.Id: (context) => StartUpScr(),
+            VehicleInfo.Id: (context) => VehicleInfo(),
+            LoginPage.Id: (context) => LoginPage(),
+            TestTheCode.Id: (context) => TestTheCode(),
+            PhoneVerification.Id: (context) => PhoneVerification(),
+            VerifyCode.Id: (context) => VerifyCode(),
+            RestartScreen.Id: (context) => RestartScreen(),
+            NewTripPage.Id: (context) => NewTripPage(),
+            CustomerFunctions.Id: (context) => CustomerFunctions(),
+            UserStatusScreen.Id: (context) => UserStatusScreen(),
+            UploadingImageToFirebaseStorage.Id: (context) => UploadingImageToFirebaseStorage(),
+            DriverMoreInfo.Id: (context) => DriverMoreInfo(),
+            UserStatusScreenPending.Id: (context) => UserStatusScreenPending(),
 
-        },
-      ),
-    );
+          },
+        ),
+      );
   }
 }

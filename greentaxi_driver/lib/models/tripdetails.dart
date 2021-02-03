@@ -12,6 +12,7 @@ class TripDetails {
   String riderPhone;
   bool commissionApplicable;
   String commissionedDriverId;
+  String status;
 
   TripDetails({
     this.pickupAddress,
@@ -21,7 +22,8 @@ class TripDetails {
     this.pickup,
     this.paymentMethod,
     this.riderName,
-    this.riderPhone
+    this.riderPhone,
+    this.status
   });
 
 }
