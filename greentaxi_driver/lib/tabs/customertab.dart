@@ -235,9 +235,7 @@ class _CustomerTabState extends State<CustomerTab> {
                           builder:(_,snapshot){
                             print("snapshot =====================> ${snapshot.data}");
 
-                            snapshot.data.forEach((snapshot) {
-
-                            };
+                        
                            return ListView.separated(
                                   padding: EdgeInsets.all(0),
                                   itemBuilder: (context, index) {
