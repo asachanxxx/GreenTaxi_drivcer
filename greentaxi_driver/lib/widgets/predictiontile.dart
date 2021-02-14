@@ -1,10 +1,14 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/dataprovider/appdata.dart';
 import 'package:greentaxi_driver/helpers/requestHelper.dart';
 import 'package:greentaxi_driver/models/address.dart';
+import 'package:greentaxi_driver/models/customer.dart';
 import 'package:greentaxi_driver/models/predictions.dart';
+import 'package:greentaxi_driver/screens/misc/customertrips.dart';
+import 'file:///I:/TaxiApp/GIT/GreenTaxi_Driver/GreenTaxi_drivcer/greentaxi_driver/lib/screens/misc/customerfunctions.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:provider/provider.dart';
@@ -71,6 +75,108 @@ class PredictionTile extends StatelessWidget {
                     ],
                   ),
                 )
+              ],
+            ),
+            SizedBox(height: 8,),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SearchTile extends StatelessWidget {
+
+  final Customer searchHistory;
+  final bool isPickUpSearch;
+  SearchTile({this.searchHistory,this.isPickUpSearch});
+
+  void getPlaceDetails(Customer customer , context) async {
+    print('PredictionTile->customer : ${customer.CustomerID}');
+    Navigator.pushNamedAndRemoveUntil(context, CustomerTrips.Id, (route) => false,arguments: customer );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      padding: EdgeInsets.all(0),
+      onPressed: (){
+        print("Customer on SearchTile $searchHistory");
+        getPlaceDetails(searchHistory, context);
+      },
+      child: Container(
+        color: Color(0xFFfafafa),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 8,),
+            Row(
+              children:<Widget> [
+                SizedBox(width:12 ),
+                Icon(Icons.account_circle_rounded,color: Color(0xFFff6f00),),
+                SizedBox(width:12 ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children:<Widget> [
+                      Text(searchHistory.fullName,overflow: TextOverflow.ellipsis,maxLines: 1, style: GoogleFonts.roboto(fontSize: 15,fontWeight: FontWeight.normal ,color: Color(0xFF212121)),),
+                      SizedBox(height: 5,),
+                      Text(searchHistory.phoneNumber,overflow: TextOverflow.ellipsis,maxLines: 1, style:GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.normal))
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_outlined, size: 15 , color: BrandColors.colorDimText,)
+              ],
+            ),
+            SizedBox(height: 8,),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class SearchTile2 extends StatelessWidget {
+
+  final Customer searchHistory;
+  final bool isPickUpSearch;
+  SearchTile2({this.searchHistory,this.isPickUpSearch});
+
+  void getPlaceDetails(Customer customer , context) async {
+    print('PredictionTile->getPlaceDetails-> placeId : $customer');
+    Navigator.pushNamedAndRemoveUntil(context, CustomerTrips.Id, (route) => false,arguments: customer );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      padding: EdgeInsets.all(0),
+      onPressed: (){
+        getPlaceDetails(searchHistory, context);
+      },
+      child: Container(
+        color: Color(0xFFfafafa),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 8,),
+            Row(
+              children:<Widget> [
+                SizedBox(width:12 ),
+                Icon(Icons.account_circle_rounded,color: Color(0xFFff6f00),),
+                SizedBox(width:12 ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children:<Widget> [
+                      Text(searchHistory.fullName,overflow: TextOverflow.ellipsis,maxLines: 1, style: GoogleFonts.roboto(fontSize: 15,fontWeight: FontWeight.normal ,color: Color(0xFF212121)),),
+                      SizedBox(height: 5,),
+                      Text(searchHistory.phoneNumber,overflow: TextOverflow.ellipsis,maxLines: 1, style:GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.normal))
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_outlined, size: 15 , color: BrandColors.colorDimText,)
               ],
             ),
             SizedBox(height: 8,),

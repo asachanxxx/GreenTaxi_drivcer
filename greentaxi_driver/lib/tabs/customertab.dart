@@ -9,12 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/customer.dart';
-import 'package:greentaxi_driver/screens/customerfunctions.dart';
+import 'file:///I:/TaxiApp/GIT/GreenTaxi_Driver/GreenTaxi_drivcer/greentaxi_driver/lib/screens/misc/customerfunctions.dart';
 import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/shared/repository/customerrepository.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
+import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
+import 'package:greentaxi_driver/widgets/predictiontile.dart';
 
 class CustomerTab extends StatefulWidget {
   @override
@@ -32,7 +34,8 @@ class _CustomerTabState extends State<CustomerTab> {
   final emailcontoller = TextEditingController();
   final passwordcontoller = TextEditingController();
 
-
+  var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  Random _rnd = Random();
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void showSnackBar(String title) {
@@ -47,6 +50,16 @@ class _CustomerTabState extends State<CustomerTab> {
     customerList = await CustomerRepository().filterData("system");
   }
 
+  Future<void> asyncMethod() async {
+    //customerList =  await CustomerRepository().filterData(currentFirebaseUser.uid);
+    await CustomerRepository().filterData(currentFirebaseUser.uid).then((value){
+      setState(() {
+        customerList = value;
+      });
+
+    });
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -54,16 +67,21 @@ class _CustomerTabState extends State<CustomerTab> {
     customerList = null;
   }
 
-
+  bool loaded = false;
   @override
   void initState(){
     // TODO: implement initState
+
     CustomerRepository().filterData(currentFirebaseUser.uid).then((value) => {
       setState(() {
         customerList = value;
+        loaded = true;
       })
     });
+
+    print("initStatexxxx");
     super.initState();
+    //asyncMethod();
   }
 
   String emailGenarator(){
@@ -72,8 +90,7 @@ class _CustomerTabState extends State<CustomerTab> {
     return "User${rand.nextInt(1000000)}@gmail.com";
   }
 
-  var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-  Random _rnd = Random();
+
 
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
@@ -88,10 +105,7 @@ class _CustomerTabState extends State<CustomerTab> {
           .createUserWithEmailAndPassword(email: email, password: password);
     }
     on FirebaseAuthException catch (e) {
-      // Do something with exception. This try/catch is here to make sure
-      // that even if the user creation fails, app.delete() runs, if is not,
-      // next time Firebase.initializeApp() will fail as the previous one was
-      // not deleted.
+
     }
     await app.delete();
     return Future.sync(() => userCredentialx);
@@ -142,7 +156,8 @@ class _CustomerTabState extends State<CustomerTab> {
       fullnamecontoller.text = "";
       phonecontoller.text = "";
 
-      showSnackBar('Hurray! Account created successfully');
+      //showSnackBar('Hurray! Account created successfully');
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       //Navigator.pop(context);
       if (e.code == 'weak-password') {
@@ -208,120 +223,69 @@ class _CustomerTabState extends State<CustomerTab> {
                       ),
                       SizedBox(height: 10,),
                       Container(
-                        height: 250,
+                        height: 400,
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFFFFF),
+                          color: Color(0xFFeeeeee),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(width: 1.0,
                               color: Color(0xFFe0e0e0)),
                         ),
-                        child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            padding: const EdgeInsets.all(8),
-                            itemCount: customerList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return GestureDetector(
-                                onTap: (){
-                                  Navigator.pushNamedAndRemoveUntil(context, CustomerFunctions.Id, (route) => false, arguments: customerList[index]);
-                                    print("Hi ${customerList[index].fullName}");
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFcfd8dc),
-                                    borderRadius: BorderRadius.circular(5),
-                                    border: Border.all(width: 1.0,
-                                        color: Color(0xFF78909c)),
-                                  ),
-                                  height: 50,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children:<Widget> [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 10, top: 5,bottom: 2),
-                                        child: Text('${customerList[index].fullName}' ,style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold ,color: Color(0xFF212121)),),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 10, bottom: 2),
-                                        child: Text('${customerList[index].phoneNumber} - ${customerList[index].CustomerID}' ,style: GoogleFonts.roboto(fontSize: 12,fontWeight: FontWeight.bold),),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
+                        child:FutureBuilder(
+                          future: CustomerRepository().filterCustomers(currentFirebaseUser.uid),
+                          builder:(_,snapshot){
+                            print("snapshot =====================> ${snapshot.data}");
+
+                            snapshot.data.forEach((snapshot) {
+
+                            };
+                           return ListView.separated(
+                                  padding: EdgeInsets.all(0),
+                                  itemBuilder: (context, index) {
+                                    return SearchTile(
+                                    searchHistory: snapshot.data[index],isPickUpSearch: true ,
+                                    );
+                                  },
+                                  separatorBuilder: (BuildContext context, int index) =>
+                                      BrandDivider(),
+                                  itemCount: snapshot.data.length,
+                                  shrinkWrap: true,
+                                  physics: ClampingScrollPhysics(),
+                                );
+
+                          } ,
+                        )
 
 
-                        ),
+                        // ListView.separated(
+                        //   padding: EdgeInsets.all(0),
+                        //   itemBuilder: (context, index) {
+                        //     return SearchTile(
+                        //     searchHistory: customerList[index],isPickUpSearch: true ,
+                        //     );
+                        //   },
+                        //   separatorBuilder: (BuildContext context, int index) =>
+                        //       BrandDivider(),
+                        //   itemCount: customerList.length,
+                        //   shrinkWrap: true,
+                        //   physics: ClampingScrollPhysics(),
+                        // ) : new Container(),
+
+
+
+
                       ),
                     ],
                   ),
                 ),
               ),
               SizedBox(height: 10,),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFFFFFF),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(width: 1.0,
-                        color: Color(0xFF78909c)),
-                  ),
-
-                  width: double.infinity,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 20, bottom: 20,  left: 20,right: 20),
-                    child: Column(
-                      children: [
-
-                        TextField(
-                          controller: fullnamecontoller,
-                          keyboardType: TextInputType.text,
-                          decoration: getInputDecorationRegister('Full Name',Icon(Icons.keyboard)),
-                          style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
-                        ),
-                        SizedBox(height: 10,),
-                        TextField(
-                          controller: phonecontoller,
-                          keyboardType: TextInputType.phone,
-                          decoration: getInputDecorationRegister('Mobile No',Icon(Icons.phone)),
-                          style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
-                        ),
-                        SizedBox(height: 10,),
-                        TaxiButton(
-                          title: "Add Customer",
-                          color:Color(0xFFff6f00),
-                          onPress: () async {
-                            bool emailValid = RegExp(
-                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(emailcontoller.text);
-
-                            //Check network aialability
-                            var connectivity = await Connectivity()
-                                .checkConnectivity();
-                            if(connectivity != ConnectivityResult.mobile && connectivity != ConnectivityResult.wifi){
-                              showSnackBar(
-                                  'Oops! seems you are offline.');
-                              return;
-                            }
-                            if (fullnamecontoller.text.length < 3) {
-                              showSnackBar(
-                                  'Oops! full name must be more than 3 characters.');
-                              return;
-                            }
-                            if (phonecontoller.text.length != 10) {
-                              showSnackBar(
-                                  'Oops! Phone number must be 10 characters.');
-                              return;
-                            }
-                            registerUser();
-                          },
-                        )
-                      ],
-                    ),
-                  ),
-                ),
+              FloatingActionButton(
+                onPressed: () {
+                  // Add your onPressed code here!
+                  showAlertGlobal(context,"Add your customers");
+                },
+                child: Icon(Icons.add),
+                backgroundColor:Color(0xFFff6f00),
               ),
             ],
           ),
@@ -331,6 +295,109 @@ class _CustomerTabState extends State<CustomerTab> {
 
   }
 
+
+
+  void showAlertGlobal(BuildContext context , String title) {
+    showDialog(
+        useSafeArea: true,
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) =>
+            AlertDialog(
+              title: Center(child: Column(
+                children: <Widget>[
+                  Icon(Icons.supervised_user_circle_rounded,  color: Color(0xFFff6f00), size: 60,),
+                  SizedBox(height: 10,),
+                  Text(title,
+                    style: GoogleFonts.roboto(fontSize: 20, color: Color(0xFFff6f00)),),
+                ],
+              )),
+              contentPadding: EdgeInsets.all(10.0),
+
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //position
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      // decoration: BoxDecoration(
+                      //   color: Color(0xFFFFFFFF),
+                      //   borderRadius: BorderRadius.circular(10),
+                      //   border: Border.all(width: 1.0,
+                      //       color: Color(0xFF78909c)),
+                      // ),
+
+                      width: double.infinity,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 20, bottom: 20,  left: 5,right: 5),
+                        child: Column(
+                          children: [
+
+                            TextField(
+                              controller: fullnamecontoller,
+                              keyboardType: TextInputType.text,
+                              decoration: getInputDecorationRegister('Full Name',Icon(Icons.keyboard)),
+                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
+                            ),
+                            SizedBox(height: 10,),
+                            TextField(
+                              controller: phonecontoller,
+                              keyboardType: TextInputType.phone,
+                              decoration: getInputDecorationRegister('Mobile No',Icon(Icons.phone)),
+                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
+                            ),
+                            SizedBox(height: 10,),
+                            TaxiButton(
+                              title: "Add Customer",
+                              color:Color(0xFFff6f00),
+                              onPress: () async {
+                                bool emailValid = RegExp(
+                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                    .hasMatch(emailcontoller.text);
+
+                                //Check network aialability
+                                var connectivity = await Connectivity()
+                                    .checkConnectivity();
+                                if(connectivity != ConnectivityResult.mobile && connectivity != ConnectivityResult.wifi){
+                                  showSnackBar(
+                                      'Oops! seems you are offline.');
+                                  return;
+                                }
+                                if (fullnamecontoller.text.length < 3) {
+                                  showSnackBar(
+                                      'Oops! full name must be more than 3 characters.');
+                                  return;
+                                }
+                                if (phonecontoller.text.length != 10) {
+                                  showSnackBar(
+                                      'Oops! Phone number must be 10 characters.');
+                                  return;
+                                }
+                                registerUser();
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // actions: <Widget>[
+              //   Center(
+              //     child: FlatButton(
+              //       child: Text("OK"),
+              //       onPressed: () {
+              //         Navigator.pop(context);
+              //       },
+              //     ),
+              //   ),
+              // ],
+            )
+    );
+  }
 
 }
 

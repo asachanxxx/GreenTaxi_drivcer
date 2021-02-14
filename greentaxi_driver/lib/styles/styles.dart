@@ -272,6 +272,19 @@ final kBoxDecorationStyle = BoxDecoration(
   ],
 );
 
+final kBoxDecorationStyleFloat = BoxDecoration(
+  color: Color(0xFFFFFFFF),
+  borderRadius: BorderRadius.circular(10.0),
+  border:Border.all(color: Color(0xFF9e9e9e),width: 2),
+  boxShadow: [
+    BoxShadow(
+      color: Color(0xFF9e9e9e),
+      blurRadius: 6.0,
+      offset: Offset(0, 2),
+    ),
+  ],
+);
+
 final tabBoxDecorations = BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.only(

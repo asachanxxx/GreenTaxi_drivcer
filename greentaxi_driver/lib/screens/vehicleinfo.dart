@@ -49,11 +49,12 @@ class _StartUpScrState extends State<VehicleInfo> {
 
   List<String> accountNames = [
     "Select a vehicle type",
-    "Bikes",
-    "Tuk-Tuk",
-    "Flex-Nano",
-    "Flex-Alto",
-    "Car",
+    "Tuk",
+    "Nano",
+    "Alto",
+    "WagonR",
+    "Classic",
+    "Deluxe",
     "Mini-Van",
     "Van",
   ];

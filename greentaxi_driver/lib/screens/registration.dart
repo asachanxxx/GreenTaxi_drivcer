@@ -41,6 +41,51 @@ class _CustomRegiterState extends State<RiderRegister> {
   final nicontoller = TextEditingController();
 
 
+  void showAlert(BuildContext context) {
+    showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) =>
+            AlertDialog(
+              title: Center(child: Column(
+                children: <Widget>[
+                  Icon(Icons.assignment_ind_outlined,  color: Color(0xFFff6f00), size: 80,),
+                  SizedBox(height: 20,),
+                  Text('දැන්වීමයි',
+                    style: GoogleFonts.roboto(fontSize: 20, color: Color(0xFFff6f00)),),
+                ],
+              )),
+
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //position
+                  mainAxisSize: MainAxisSize.min,
+                  // wrap content in flutter
+                  children: <Widget>[
+                    SizedBox(height: 10,),
+                    Text(
+                      "We are glad that you are interested in the Go2Go app.You will need to include your details as photos in the future. Keep photos of the documents mentioned in it on your phone(ඔබ Go2Go යෙදුම ගැන උනන්දු වීම ගැන අපි සතුටු වෙමු. ඉදිරියේදී ඔබගේ විස්තර ජායාරුප වශයෙන් ඇතුලත් කිරීමට සිදුවේ. ඒ සදහා සදහන් ලේකන වල ජායාරුප ඔබගේ දුරකතනයේ තබා ගන්න  )",
+                      style: GoogleFonts.roboto(fontSize: 14),),
+                    Text("1. Certificate of Registration of Motor Vehicle(මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය)\n2. Drivers License(රියදුරු බලපත්‍රය)\n3. Motor insurance policy(මෝටර් වාහන රක්ෂණ ඔප්පුව)\n4. Vehicle Revenue License(වාහන ආදායම් බලපත්‍රය)\n5. Bank Passbook Copy (බැංකු පාස් පොත් පිටපත)",
+                        style: GoogleFonts.roboto(fontSize: 11 , fontWeight: FontWeight.bold))
+                  ],
+                ),
+
+              actions: <Widget>[
+                Center(
+                  child: FlatButton(
+                    child: Text("OK"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            )
+    );
+  }
+
+
   void registerUser(text1, text2) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
@@ -85,6 +130,16 @@ class _CustomRegiterState extends State<RiderRegister> {
       print(e);
       showSnackBar('Oops! There is a problem! Try again later.');
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      showAlert(context);
+    });
+    super.initState();
+
   }
 
   @override
@@ -157,7 +212,7 @@ class _CustomRegiterState extends State<RiderRegister> {
                               controller: emailcontoller,
                               keyboardType: TextInputType.emailAddress,
                               inputFormatters:[
-                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z@.]')),
+                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z@.0-9]')),
                               ],
                               decoration: getInputDecorationRegister('E-Mail',Icon(Icons.email)),
                               style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),

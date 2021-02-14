@@ -111,12 +111,31 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
 
   }
 
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  void showSnackBar(String title){
+    final snackbar = SnackBar(
+      content: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
+    );
+    scaffoldKey.currentState.showSnackBar(snackbar);
+  }
+
+
   void availabilityButtonPress() async{
-    print("availabilityButtonPress->isOnlineStatus  $isOnlineStatus");
+    //check network availability
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
+      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      return;
+    }
+
+    print("availabilityButtonPress->isOnlineStatus123  $isOnlineStatus");
     if (isOnlineStatus) {
+      print("availabilityButtonPress() point 0");
       GoOnline();
+      print("availabilityButtonPress() point 1");
       getLocationUpdates();
-      //Navigator.pop(context);
+      print("availabilityButtonPress() point 2");
       setState(() {
         availabilityColor = Colors.greenAccent;
         availabilityTitle = 'GO OFFLINE';
@@ -245,9 +264,10 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      key: scaffoldKey,
       children: <Widget>[
         GoogleMap(
-          padding: EdgeInsets.only(top: 220),
+          padding: EdgeInsets.only(top: 190),
           mapType: MapType.normal,
           myLocationButtonEnabled: true,
           myLocationEnabled: true,
@@ -266,12 +286,43 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         ),
         Container(
           //child: Text("Check Container"),
-          height: 210,
+          height: 190,
           width: double.infinity,
           decoration: boxDecoDefualt,
         ),
+        ///Menu Buttons *************************************************************************************************************
         Positioned(
-          top: 60,
+          top: 200,
+          left: 15,
+          child: GestureDetector(
+            onTap: () {
+
+            },
+            child: Container(
+              alignment: Alignment.center,
+              decoration: kBoxDecorationStyleFloat,
+              height: 40.0,
+              width: 130,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:<Widget> [
+                  SizedBox(width: 10,),
+                  Icon(
+                    Icons.call ,
+                    color: Color(0xfff57f17),
+                  ),
+                  SizedBox(width: 8,),
+                  Text("Book a trip",style: GoogleFonts.roboto(fontSize: 14),),
+
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: 40,
           left: 0,
           right: 0,
           child: Column(
@@ -283,6 +334,13 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
                     title: availabilityTitle,
                     color: availabilityColor,
                     onPressed: () async  {
+                      //check network availability
+                      var connectivityResult = await Connectivity().checkConnectivity();
+                      if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
+                        showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+                        return;
+                      }
+
                       print("ConfirmSheet onPressed");
                       bool error = false;
                       var location = await HelperMethods.determinePositionRaw().catchError((Object err){
@@ -435,7 +493,12 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     );
   }
 
-  void GoOnline() {
+  void GoOnline() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
+      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      return;
+    }
     isOnline = true;
     cancelLocationUpdate = false;
     Geofire.initialize('driversAvailable');
@@ -463,7 +526,12 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   /*
   * This responsible to go online for the driver. with help of geofire
   * */
-  void GoOffline() {
+  void GoOffline()  async{
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
+      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      return;
+    }
     isOnline = false;
     cancelLocationUpdate = true;
 
