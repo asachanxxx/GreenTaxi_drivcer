@@ -116,3 +116,12 @@ cupertino_icons: ^0.1.3
   wakelock: ^0.2.1+1
   sms_autofill: ^1.2.6
 
+  //var res = await FirebaseService.addTask("MainRefID", "New task 1", taskTypes.RideRequest,DateTime.now());
+                // var address = Address(placeId: "",placeFormatAddress: "",placeName: "",logitude: 0,latitude: 0);
+                // var res = await FirebaseService.addRideRequestList("CustomerID",address,address);
+                //var res = await FirebaseService.addNotification("RefTask",notificationTypes.Task,notificationApplyTo.Singleton,notificationMedia.InApp,"Sample Description");
+
+                // var values = await SerialService.getSerial(SetialTypes.task);
+                // print("Serial Value of Tasks $values");
+                //print("SimpleRecorder $res");
+                //print("TimeStamp ${DateTime.now().millisecondsSinceEpoch}");

@@ -46,9 +46,7 @@ class CustomerRepository {
         print("filterData  fullName of phoneNumber ---  ${snapshot
             .value["phoneNumber"]}");
         //print("filterData  fullName of checkRef.key ---  ${newKey}");
-        theList.add(Customer(
-            snapshot.value["fullName"], snapshot.value["phoneNumber"],
-            snapshot.value["driverID"], ""));
+        theList.add(Customer(fullName:snapshot.value["fullName"], phoneNumber:snapshot.value["phoneNumber"],driverID:snapshot.value["driverID"],CustomerID:""));
       });
       return theList;
     });

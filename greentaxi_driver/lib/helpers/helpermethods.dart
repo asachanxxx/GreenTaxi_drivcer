@@ -164,42 +164,42 @@ class HelperMethods {
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type2");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type3") {
         // Flex-Alto
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type3");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type4") {
         // Mini
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type4");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type5") {
         // Car
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type5");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type6") {
         // Minivan
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type6");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type7") {
         // Van
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type7");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       }
 
@@ -240,6 +240,17 @@ class HelperMethods {
       return 0;
     }
   }
+
+  static double applyFireLogic(int kms, double kmPrice) {
+    var disKms = kms/1000;
+    if (disKms <=4) {
+      return kmPrice * 4;
+    } else {
+      return (kms / 1000) * kmPrice;
+    }
+  }
+
+
 
   static void disableHomTabLocationUpdates() {
     homeTabPositionStream.pause();

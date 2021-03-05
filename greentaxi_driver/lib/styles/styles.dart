@@ -272,6 +272,20 @@ final kBoxDecorationStyle = BoxDecoration(
   ],
 );
 
+final kBoxDecorationStyleSearch = BoxDecoration(
+  color: Color(0xFF000000),
+  borderRadius: BorderRadius.circular(10.0),
+  border:Border.all(color: Colors.white,width: 2),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black54,
+      blurRadius: 6.0,
+      offset: Offset(0, 2),
+    ),
+  ],
+);
+
+
 final kBoxDecorationStyleFloat = BoxDecoration(
   color: Color(0xFFFFFFFF),
   borderRadius: BorderRadius.circular(10.0),

@@ -19,10 +19,9 @@ class RestartScreen extends StatefulWidget {
 }
 
 class _RestartScreenState extends State<RestartScreen> {
-
   var geoLocator = Geolocator();
   var locationOptions =
-  LocationOptions(accuracy: LocationAccuracy.bestForNavigation);
+      LocationOptions(accuracy: LocationAccuracy.bestForNavigation);
 
   //
   // void fetchRideInfo() async {
@@ -36,21 +35,21 @@ class _RestartScreenState extends State<RestartScreen> {
   // }
 
   @override
-  initState(){
+  initState() {
     super.initState();
     //tripDetails =  await CompanyRepository().getTripDetails(dRoute);
     //fetchRideInfo();
     appRestaredMiddleOfRide = true;
-    print("initState -> tripDetails ${tripDetails.riderName}"); // but here It's null!
+    print(
+        "initState -> tripDetails ${tripDetails.riderName}"); // but here It's null!
     getCurrentDriverInfo();
   }
-
 
   void getCurrentDriverInfo() async {
     currentFirebaseUser = FirebaseAuth.instance.currentUser;
     DatabaseReference driverRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}');
+        .child('drivers/${currentFirebaseUser.uid}/profile');
 
     driverRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
@@ -60,22 +59,20 @@ class _RestartScreenState extends State<RestartScreen> {
       }
     });
 
-    ridePositionStream = Geolocator
-        .getPositionStream()
-        .listen((Position position) {
+    ridePositionStream =
+        Geolocator.getPositionStream().listen((Position position) {
       currentPosition = position;
     });
 
-    print("getCurrentDriverInfo  currentPosition ${currentPosition.longitude.toString()} ");
+    print(
+        "getCurrentDriverInfo  currentPosition ${currentPosition.longitude.toString()} ");
 
     PushNotificationService pushNotificationService = PushNotificationService();
-    pushNotificationService.initialize(context,driverInitialPos);
+    pushNotificationService.initialize(context, driverInitialPos);
     pushNotificationService.getToken();
 
     //HelperMethods.getHistoryInfo(context);
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -94,8 +91,10 @@ class _RestartScreenState extends State<RestartScreen> {
                       padding: EdgeInsets.fromLTRB(15.0, 30.0, 0.0, 0.0),
                       child: Text(
                         'taXy',
-                        style:
-                        GoogleFonts.lobster(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                        style: GoogleFonts.lobster(
+                            fontSize: 80.0,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFff6f00)),
                       ),
                     ),
                     Container(
@@ -111,9 +110,13 @@ class _RestartScreenState extends State<RestartScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 30,),
-              Text("You are returning from a restart...  $dRoute",
-                style: GoogleFonts.roboto(fontSize: 22),),
+              SizedBox(
+                height: 30,
+              ),
+              Text(
+                "You are returning from a restart...  $dRoute",
+                style: GoogleFonts.roboto(fontSize: 22),
+              ),
               TaxiButton(
                 color: Colors.deepOrangeAccent,
                 title: "Continue With Ride",
@@ -121,12 +124,12 @@ class _RestartScreenState extends State<RestartScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            NewTripPage(
-                              tripDetails: tripDetails,
-                            ),
+                        builder: (context) => NewTripPage(
+                          tripDetails: tripDetails,
+                        ),
                       ));
-                },),
+                },
+              ),
               TaxiButton(
                 color: Colors.deepOrangeAccent,
                 title: "End the current Ride",
@@ -134,12 +137,12 @@ class _RestartScreenState extends State<RestartScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            NewTripPage(
-                              tripDetails: tripDetails,
-                            ),
+                        builder: (context) => NewTripPage(
+                          tripDetails: tripDetails,
+                        ),
                       ));
-                },)
+                },
+              )
             ],
           ),
         ),

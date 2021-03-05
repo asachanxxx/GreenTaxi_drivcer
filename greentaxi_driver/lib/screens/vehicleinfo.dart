@@ -27,17 +27,15 @@ class VehicleInfo extends StatefulWidget {
 }
 
 class Item {
-  const Item(this.name,this.icon);
+  const Item(this.name, this.icon);
   final String name;
   final Icon icon;
 }
-
 
 class _StartUpScrState extends State<VehicleInfo> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
   DateTime selectedDate = DateTime.now();
-
 
   final fleetnocontoller = TextEditingController();
   final modelcontoller = TextEditingController();
@@ -59,21 +57,23 @@ class _StartUpScrState extends State<VehicleInfo> {
     "Van",
   ];
 
-
   // List<String> accountNames = [
   //   "dropdown button will be disabled,",
   //   "arrow will be displayed in grey and it will",
   // ];
 
-
   void registerVehicle() async {
     try {
       if (FirebaseAuth.instance.currentUser != null) {
-
         DatabaseReference dbRef2 = FirebaseDatabase.instance.reference().child(
-            'drivers/${FirebaseAuth.instance.currentUser.uid}/accountStatus');
+            'drivers/${FirebaseAuth.instance.currentUser.uid}/profile/accountStatus');
         dbRef2.set("NoImageDet");
         dbRef2 = null;
+
+        DatabaseReference dbRef3 = FirebaseDatabase.instance.reference().child(
+            'listTree/driverList/${FirebaseAuth.instance.currentUser.uid}/accountStatus');
+        dbRef3.set("NoImageDet");
+        dbRef3 = null;
 
         DatabaseReference dbRef = FirebaseDatabase.instance.reference().child(
             'drivers/${FirebaseAuth.instance.currentUser.uid}/vehicle_details');
@@ -83,13 +83,14 @@ class _StartUpScrState extends State<VehicleInfo> {
           'model': modelcontoller.text,
           'color': colorcontoller.text,
           'insuranceNo': insuranceNumbercontoller.text,
-          'vehicleType':accountname,
+          'vehicleType': accountname,
           'insuranceExpire': selectedDate.toString()
         };
         dbRef.set(vehicleMap);
         dbRef = null;
         print('Save Done');
-        Navigator.pushNamedAndRemoveUntil(context, DriverMoreInfo.Id, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+            context, DriverMoreInfo.Id, (route) => false);
       } else {
         print('Current User nUll');
       }
@@ -104,11 +105,13 @@ class _StartUpScrState extends State<VehicleInfo> {
     }
   }
 
-
   void showSnackBar(String title) {
     final snackbar = SnackBar(
       content: Text(
-        title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
+        title,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15),
+      ),
     );
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
@@ -138,10 +141,8 @@ class _StartUpScrState extends State<VehicleInfo> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         key: scaffoldKey,
         body: SafeArea(
@@ -149,55 +150,54 @@ class _StartUpScrState extends State<VehicleInfo> {
             padding: EdgeInsets.only(top: 10, left: 20, right: 20),
             child: SingleChildScrollView(
               child: Column(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     child: Stack(
                       children: <Widget>[
-
                         Container(
                           //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children:<Widget> [
+                            children: <Widget>[
                               Text(
                                 'GO',
-                                style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                               Text(
                                 '2',
-                                style:
-                                GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 80.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF424242)),
                               ),
                               Text(
                                 'GO',
-                                style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                             ],
                           ),
                         ),
-
-
-
                       ],
                     ),
                   ),
                   Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white
-                    ),
+                    decoration: BoxDecoration(color: Colors.white),
                     child: Column(
                       children: <Widget>[
-
-                        Text('Vehicle information',
+                        Text(
+                          'Vehicle information',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.roboto(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Padding(
                           padding: EdgeInsets.all(20.0),
-
                           child: Column(
                             children: <Widget>[
                               TextField(
@@ -210,7 +210,9 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Plate No (EX: BCD-6555)'),
                                 style: f_font_text_Input,
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(
+                                height: 10,
+                              ),
                               TextField(
                                 controller: makecontoller,
                                 keyboardType: TextInputType.emailAddress,
@@ -218,7 +220,9 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Vehicle Make (EX: Suzuki)'),
                                 style: f_font_text_Input,
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(
+                                height: 10,
+                              ),
                               TextField(
                                 controller: modelcontoller,
                                 keyboardType: TextInputType.text,
@@ -226,7 +230,9 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Vehicle Model (EX: Alto)'),
                                 style: f_font_text_Input,
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(
+                                height: 10,
+                              ),
                               TextField(
                                 controller: colorcontoller,
                                 obscureText: debugInstrumentationEnabled,
@@ -235,8 +241,9 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Vehicle Color (EX: Red)'),
                                 style: f_font_text_Input,
                               ),
-
-                              SizedBox(height: 10,),
+                              SizedBox(
+                                height: 10,
+                              ),
                               TextField(
                                 controller: insuranceNumbercontoller,
                                 keyboardType: TextInputType.text,
@@ -245,12 +252,15 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     'Insurance No(EX: MCCNH200441011)'),
                                 style: f_font_text_Input,
                               ),
-                              SizedBox(height: 10,),
+                              SizedBox(
+                                height: 10,
+                              ),
                               Container(
                                 width: 350,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(width: 1.0, color: Colors.black26),
+                                  border: Border.all(
+                                      width: 1.0, color: Colors.black26),
                                 ),
                                 child: Padding(
                                   padding: EdgeInsets.all(8),
@@ -259,7 +269,7 @@ class _StartUpScrState extends State<VehicleInfo> {
                                     icon: Icon(Icons.arrow_downward),
                                     iconSize: 20,
                                     elevation: 30,
-                                    isExpanded:true,
+                                    isExpanded: true,
                                     style: TextStyle(color: Colors.deepPurple),
                                     underline: Container(
                                       height: 2,
@@ -273,7 +283,8 @@ class _StartUpScrState extends State<VehicleInfo> {
                                       });
                                     },
                                     items: accountNames
-                                        .map<DropdownMenuItem<String>>((String value) {
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(value),
@@ -282,27 +293,29 @@ class _StartUpScrState extends State<VehicleInfo> {
                                   ),
                                 ),
                               ),
-
-
-                              SizedBox(height: 10,),
-
-                              SizedBox(height: 30,),
-
-
+                              SizedBox(
+                                height: 10,
+                              ),
+                              SizedBox(
+                                height: 30,
+                              ),
                               TaxiButton(
                                 title: "Register",
                                 color: Color(0xFFff6f00),
                                 onPress: () async {
                                   //Check network aialability
-                                  var connectivity = await Connectivity()
-                                      .checkConnectivity();
-                                  if(connectivity != ConnectivityResult.mobile && connectivity != ConnectivityResult.wifi){
+                                  var connectivity =
+                                      await Connectivity().checkConnectivity();
+                                  if (connectivity !=
+                                          ConnectivityResult.mobile &&
+                                      connectivity != ConnectivityResult.wifi) {
                                     showSnackBar(
                                         'Oops! seems you are offline.');
                                     print('Oops! seems you are offline.');
                                     return;
                                   }
-                                  if (accountname.trim() == "Select a vehicle type" ) {
+                                  if (accountname.trim() ==
+                                      "Select a vehicle type") {
                                     showSnackBar(
                                         'Oops! Please select a vehicle type.');
                                     print('Oops! invalid insurance Number .');
@@ -310,8 +323,7 @@ class _StartUpScrState extends State<VehicleInfo> {
                                   }
 
                                   if (fleetnocontoller.text.length > 8) {
-                                    showSnackBar(
-                                        'Oops! invalid plate no.');
+                                    showSnackBar('Oops! invalid plate no.');
                                     print('Oops! invalid plate no.');
                                     return;
                                   }
@@ -356,26 +368,16 @@ class _StartUpScrState extends State<VehicleInfo> {
                               )
                             ],
                           ),
-
                         ),
-
 
                         // SizedBox(height: 160,),
                       ],
                     ),
-
                   ),
                 ],
               ),
             ),
           ),
-        )
-    );
-
-
-
+        ));
   }
-
-
-
 }

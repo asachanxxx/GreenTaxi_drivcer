@@ -69,7 +69,7 @@ class CompanyRepository {
   Future<String> getNewTripStatus(String uid) async {
     var checkRef = await FirebaseDatabase.instance
         .reference()
-        .child('drivers/$uid/newtrip')
+        .child('drivers/$uid/profile/newtrip')
         .once();
     if (checkRef.value != null) {
       print('getNewTripStatus ${checkRef.value}');
@@ -111,7 +111,6 @@ class CompanyRepository {
           double.parse(snapshot.value['destination']['latitude'].toString());
       double destinationLng =
           double.parse(snapshot.value['destination']['longitude'].toString());
-
 
       double driverLat = double.parse(
           snapshot.value['driver_location']['latitude'].toString());
@@ -168,18 +167,15 @@ class CompanyRepository {
     return null;
   }
 
-
   Future<dynamic> getCheckUidHasDriverAccount(String uid) async {
     var checkRef = await FirebaseDatabase.instance
         .reference()
-        .child('drivers/$uid/')
+        .child('drivers/$uid/profile')
         .once();
     if (checkRef.value != null) {
-       print('getCheckUidHasDriverAccount  ${checkRef.value}');
+      print('getCheckUidHasDriverAccount  ${checkRef.value}');
       return checkRef.value;
     }
     return false;
   }
-
-
 }

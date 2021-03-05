@@ -8,6 +8,7 @@ class LifeCycleManager extends StatefulWidget {
   LifeCycleManager({Key key, this.child}) : super(key: key);
   _LifeCycleManagerState createState() => _LifeCycleManagerState();
 }
+
 class _LifeCycleManagerState extends State<LifeCycleManager>
     with WidgetsBindingObserver {
   @override
@@ -15,18 +16,21 @@ class _LifeCycleManagerState extends State<LifeCycleManager>
     WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('state managed= $state');
-    if(state.toString() == "detached"){
+    if (state.toString() == "detached") {
       GoOffline();
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,11 +42,11 @@ class _LifeCycleManagerState extends State<LifeCycleManager>
     Geofire.removeLocation(currentFirebaseUser.uid);
     var tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/newtrip');
+        .child('drivers/${currentFirebaseUser.uid}/profile/newtrip');
 
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/onlineStatus');
+        .child('drivers/${currentFirebaseUser.uid}/profile/onlineStatus');
     tripRequestRef.set('offline');
 
     // tripRequestRef = FirebaseDatabase.instance
@@ -52,5 +56,4 @@ class _LifeCycleManagerState extends State<LifeCycleManager>
 
     tripRequestRef.onDisconnect();
   }
-
 }

@@ -14,7 +14,6 @@ import 'package:greentaxi_driver/screens/vehicleinfo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 
-
 class RiderRegister extends StatefulWidget {
   static const String Id = 'register';
   @override
@@ -26,13 +25,14 @@ class _CustomRegiterState extends State<RiderRegister> {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void showSnackBar(String title) {
-    final snackbar = SnackBar(content: Text(
+    final snackbar = SnackBar(
+        content: Text(
       title,
-      textAlign: TextAlign.center, style: TextStyle(fontSize: 15.0),
+      textAlign: TextAlign.center,
+      style: TextStyle(fontSize: 15.0),
     ));
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
-
 
   final fullnamecontoller = TextEditingController();
   final phonecontoller = TextEditingController();
@@ -40,37 +40,50 @@ class _CustomRegiterState extends State<RiderRegister> {
   final passwordcontoller = TextEditingController();
   final nicontoller = TextEditingController();
 
-
   void showAlert(BuildContext context) {
     showDialog(
         context: context,
         barrierDismissible: true,
-        builder: (BuildContext context) =>
-            AlertDialog(
-              title: Center(child: Column(
+        builder: (BuildContext context) => AlertDialog(
+              title: Center(
+                  child: Column(
                 children: <Widget>[
-                  Icon(Icons.assignment_ind_outlined,  color: Color(0xFFff6f00), size: 80,),
-                  SizedBox(height: 20,),
-                  Text('දැන්වීමයි',
-                    style: GoogleFonts.roboto(fontSize: 20, color: Color(0xFFff6f00)),),
+                  Icon(
+                    Icons.assignment_ind_outlined,
+                    color: Color(0xFFff6f00),
+                    size: 80,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'දැන්වීමයි',
+                    style: GoogleFonts.roboto(
+                        fontSize: 20, color: Color(0xFFff6f00)),
+                  ),
                 ],
               )),
-
-                content: Column(
+              content: SingleChildScrollView(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   //position
                   mainAxisSize: MainAxisSize.min,
                   // wrap content in flutter
                   children: <Widget>[
-                    SizedBox(height: 10,),
+                    SizedBox(
+                      height: 10,
+                    ),
                     Text(
                       "We are glad that you are interested in the Go2Go app.You will need to include your details as photos in the future. Keep photos of the documents mentioned in it on your phone(ඔබ Go2Go යෙදුම ගැන උනන්දු වීම ගැන අපි සතුටු වෙමු. ඉදිරියේදී ඔබගේ විස්තර ජායාරුප වශයෙන් ඇතුලත් කිරීමට සිදුවේ. ඒ සදහා සදහන් ලේකන වල ජායාරුප ඔබගේ දුරකතනයේ තබා ගන්න  )",
-                      style: GoogleFonts.roboto(fontSize: 14),),
-                    Text("1. Certificate of Registration of Motor Vehicle(මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය)\n2. Drivers License(රියදුරු බලපත්‍රය)\n3. Motor insurance policy(මෝටර් වාහන රක්ෂණ ඔප්පුව)\n4. Vehicle Revenue License(වාහන ආදායම් බලපත්‍රය)\n5. Bank Passbook Copy (බැංකු පාස් පොත් පිටපත)",
-                        style: GoogleFonts.roboto(fontSize: 11 , fontWeight: FontWeight.bold))
+                      style: GoogleFonts.roboto(fontSize: 14),
+                    ),
+                    Text(
+                        "1. Certificate of Registration of Motor Vehicle(මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය)\n2. Drivers License(රියදුරු බලපත්‍රය)\n3. Motor insurance policy(මෝටර් වාහන රක්ෂණ ඔප්පුව)\n4. Vehicle Revenue License(වාහන ආදායම් බලපත්‍රය)\n5. Bank Passbook Copy (බැංකු පාස් පොත් පිටපත)",
+                        style: GoogleFonts.roboto(
+                            fontSize: 11, fontWeight: FontWeight.bold))
                   ],
                 ),
-
+              ),
               actions: <Widget>[
                 Center(
                   child: FlatButton(
@@ -81,28 +94,26 @@ class _CustomRegiterState extends State<RiderRegister> {
                   ),
                 ),
               ],
-            )
-    );
+            ));
   }
-
 
   void registerUser(text1, text2) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-          email: emailcontoller.text,
-          password: passwordcontoller.text
-      );
+              email: emailcontoller.text, password: passwordcontoller.text);
 
       currentFirebaseUser = userCredential.user;
 
       if (userCredential != null) {
         print("EMAIL: " + userCredential.user.email);
         print("Password: " + passwordcontoller.text);
-        DatabaseReference newuser = FirebaseDatabase.instance.reference().child(
-            'drivers/${userCredential.user.uid}');
+        DatabaseReference newuser = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${userCredential.user.uid}/profile');
 
         Map usermap = {
+          'key': userCredential.user.uid,
           'fullName': fullnamecontoller.text,
           'email': emailcontoller.text,
           'phoneNumber': phonecontoller.text,
@@ -110,14 +121,18 @@ class _CustomRegiterState extends State<RiderRegister> {
           'nic': nicontoller.text,
           'accountStatus': "NoVehicleDet",
           'datetime': DateTime.now().toString()
-
         };
         newuser.set(usermap);
+
+        DatabaseReference listUsers = FirebaseDatabase.instance
+            .reference()
+            .child('listTree/driverList/${userCredential.user.uid}');
+
+        listUsers.set(usermap);
       }
       showSnackBar('Hurray! Account created successfully');
       //Navigator.pushNamedAndRemoveUntil(context, VehicleInfo.Id, (route) => false);
       Navigator.pushNamed(context, VehicleInfo.Id);
-
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         showSnackBar('Oops! The password provided is too weak.');
@@ -139,7 +154,6 @@ class _CustomRegiterState extends State<RiderRegister> {
       showAlert(context);
     });
     super.initState();
-
   }
 
   @override
@@ -153,111 +167,147 @@ class _CustomRegiterState extends State<RiderRegister> {
             padding: EdgeInsets.only(top: 10, left: 20, right: 20),
             child: Column(
               children: <Widget>[
-            Container(
-            child: Stack(
-                children: <Widget>[
-
-                  Container(
-                    //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget> [
-                        Text(
-                          'GO',
-                          style:
-                          GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                Container(
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'GO',
+                              style: GoogleFonts.rubik(
+                                  fontSize: 60.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFff6f00)),
+                            ),
+                            Text(
+                              '2',
+                              style: GoogleFonts.rubik(
+                                  fontSize: 80.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF424242)),
+                            ),
+                            Text(
+                              'GO',
+                              style: GoogleFonts.rubik(
+                                  fontSize: 60.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFff6f00)),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '2',
-                          style:
-                          GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
-                        ),
-                        Text(
-                          'GO',
-                          style:
-                          GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-
-          ],
-        ),
-      ),
+                ),
                 Container(
                   child: Column(
                     children: <Widget>[
-                      SizedBox(height:10,),
-                      Text('Sign In',
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        'Sign In',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.roboto(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
 
                       Padding(
-                        padding:  EdgeInsets.all(20.0),
+                        padding: EdgeInsets.only(top: 10, left: 20, right: 20),
                         child: Column(
                           children: <Widget>[
                             TextField(
                               controller: fullnamecontoller,
                               keyboardType: TextInputType.name,
-                              inputFormatters:[
-                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[A-Za-z ]')),
                               ],
-                              decoration: getInputDecorationRegister('Full Name',Icon(Icons.keyboard)),
-                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
+                              decoration: getInputDecorationRegister(
+                                  'Full Name', Icon(Icons.keyboard)),
+                              style: GoogleFonts.roboto(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                  height: 1),
                             ),
-                            SizedBox(height: 10,),
+                            SizedBox(
+                              height: 10,
+                            ),
                             TextField(
                               controller: emailcontoller,
                               keyboardType: TextInputType.emailAddress,
-                              inputFormatters:[
-                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z@.0-9]')),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[A-Za-z@.0-9]')),
                               ],
-                              decoration: getInputDecorationRegister('E-Mail',Icon(Icons.email)),
-                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15,height: 1),
+                              decoration: getInputDecorationRegister(
+                                  'E-Mail', Icon(Icons.email)),
+                              style: GoogleFonts.roboto(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                  height: 1),
                             ),
-                            SizedBox(height: 10,),
+                            SizedBox(
+                              height: 10,
+                            ),
                             TextField(
                               controller: phonecontoller,
-                              inputFormatters:[
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9]')),
                               ],
                               keyboardType: TextInputType.phone,
-                              decoration: getInputDecorationRegister('Mobile No',Icon(Icons.phone)),
-                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
+                              decoration: getInputDecorationRegister(
+                                  'Mobile No', Icon(Icons.phone)),
+                              style: GoogleFonts.roboto(
+                                  color: Colors.black87, fontSize: 15),
                             ),
-                            SizedBox(height: 10,),
+                            SizedBox(
+                              height: 10,
+                            ),
                             TextField(
                               controller: passwordcontoller,
                               obscureText: true,
-                              decoration: getInputDecorationRegister('Password',Icon(Icons.vpn_key_sharp)),
-                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
+                              decoration: getInputDecorationRegister(
+                                  'Password', Icon(Icons.vpn_key_sharp)),
+                              style: GoogleFonts.roboto(
+                                  color: Colors.black87, fontSize: 15),
                             ),
-                            SizedBox(height: 10,),
+                            SizedBox(
+                              height: 10,
+                            ),
                             TextField(
                               controller: nicontoller,
-                              inputFormatters:[
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9vxVX]')),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9vxVX]')),
                               ],
-                              decoration: getInputDecorationRegister('ID Card No',Icon(Icons.card_membership)),
-                              style: GoogleFonts.roboto(color: Colors.black87,fontSize: 15),
+                              decoration: getInputDecorationRegister(
+                                  'ID Card No', Icon(Icons.card_membership)),
+                              style: GoogleFonts.roboto(
+                                  color: Colors.black87, fontSize: 15),
                             ),
-                            SizedBox(height: 30,),
+                            SizedBox(
+                              height: 30,
+                            ),
                             TaxiButton(
                               title: "Register",
-                              color:Color(0xFFff6f00),
+                              color: Color(0xFFff6f00),
                               onPress: () async {
                                 bool emailValid = RegExp(
-                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                                     .hasMatch(emailcontoller.text);
 
                                 //print("isNicValid(0778151151) ${isNicValid("77815115115V")}");
 
                                 //Check network aialability
-                                var connectivity = await Connectivity()
-                                    .checkConnectivity();
-                                if(connectivity != ConnectivityResult.mobile && connectivity != ConnectivityResult.wifi){
+                                var connectivity =
+                                    await Connectivity().checkConnectivity();
+                                if (connectivity != ConnectivityResult.mobile &&
+                                    connectivity != ConnectivityResult.wifi) {
                                   showSnackBar(
                                       'It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
                                   return;
@@ -289,8 +339,6 @@ class _CustomRegiterState extends State<RiderRegister> {
                                   return;
                                 }
 
-
-
                                 registerUser(emailcontoller.text,
                                     passwordcontoller.text);
                               },
@@ -300,15 +348,25 @@ class _CustomRegiterState extends State<RiderRegister> {
                       ),
 
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center, //Center Row contents horizontally,
-                        children:<Widget> [
-                          Text('Already have an account,' ,style: f_font_16_Normal_Black100,),
-                          FlatButton(
-                              onPressed: (){
-                                Navigator.pushNamedAndRemoveUntil(context, LoginPage.Id, (route) => false);
-                              },
-                              child: Text('Log In' ,style: GoogleFonts.roboto(fontSize: 17,fontWeight: FontWeight.bold, color:  Color(0xFFff6f00)),)
+                        mainAxisAlignment: MainAxisAlignment
+                            .center, //Center Row contents horizontally,
+                        children: <Widget>[
+                          Text(
+                            'Already have an account,',
+                            style: f_font_16_Normal_Black100,
                           ),
+                          FlatButton(
+                              onPressed: () {
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context, LoginPage.Id, (route) => false);
+                              },
+                              child: Text(
+                                'Log In',
+                                style: GoogleFonts.roboto(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
+                              )),
                         ],
                       ),
                       //
@@ -323,21 +381,15 @@ class _CustomRegiterState extends State<RiderRegister> {
     );
   }
 
-  bool isNicValid(String nic){
+  bool isNicValid(String nic) {
     print("nic: - $nic  Length : ${nic.length}");
 
     bool nicValid = false;
-    if(nic.length <=10) {
-      nicValid = RegExp(
-          r"^(?:[+0]9)?[0-9]{9}[V,X,v,x]$")
-          .hasMatch(nic);
-    }else{
-      nicValid = RegExp(
-          r"^(?:[+0]9)?[0-9]{12}$")
-          .hasMatch(nic);
+    if (nic.length <= 10) {
+      nicValid = RegExp(r"^(?:[+0]9)?[0-9]{9}[V,X,v,x]$").hasMatch(nic);
+    } else {
+      nicValid = RegExp(r"^(?:[+0]9)?[0-9]{12}$").hasMatch(nic);
     }
     return nicValid;
   }
-
 }
-

@@ -64,41 +64,45 @@ class _LoginPageState extends State<LoginPage> {
       showSnackBar(ex.message);
     });
 
-    User user = userCredential.user;
-    if (user != null) {
-      // verify login
-      DatabaseReference userRef =
-          FirebaseDatabase.instance.reference().child('drivers/${user.uid}');
-      userRef.once().then((DataSnapshot snapshot) {
-        if (snapshot.value != null) {
-          var accStatus = snapshot.value["accountStatus"];
+    if(userCredential != null) {
+      User user = userCredential.user;
+      if (user != null) {
+        // verify login
+        DatabaseReference userRef = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${user.uid}/profile');
+        userRef.once().then((DataSnapshot snapshot) {
+          if (snapshot.value != null) {
+            var accStatus = snapshot.value["accountStatus"];
 
-          if (accStatus == "NoVehicleDet") {
-            Navigator.pushNamedAndRemoveUntil(
-                context, VehicleInfo.Id, (route) => false);
-          } else if (accStatus == "NoImageDet") {
-            Navigator.pushNamedAndRemoveUntil(
-                context, DriverMoreInfo.Id, (route) => false);
-          } else if (accStatus == "Banned") {
-            Navigator.pushNamedAndRemoveUntil(
-                context, UserStatusScreen.Id, (route) => false);
-          } else if (accStatus == "Pending") {
-            Navigator.pushNamedAndRemoveUntil(
-                context, UserStatusScreenPending.Id, (route) => false);
+            if (accStatus == "NoVehicleDet") {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, VehicleInfo.Id, (route) => false);
+            } else if (accStatus == "NoImageDet") {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, DriverMoreInfo.Id, (route) => false);
+            } else if (accStatus == "Banned") {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, UserStatusScreen.Id, (route) => false);
+            } else if (accStatus == "Pending") {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, UserStatusScreenPending.Id, (route) => false);
+            } else {
+              currentFirebaseUser = FirebaseAuth.instance.currentUser;
+              Navigator.pushNamedAndRemoveUntil(
+                  context, MainPage.Id, (route) => false);
+            }
           } else {
-            currentFirebaseUser = FirebaseAuth.instance.currentUser;
-            Navigator.pushNamedAndRemoveUntil(
-                context, MainPage.Id, (route) => false);
+            //check error and display message
+            Navigator.pop(context);
+            showSnackBar(
+                "This account has no Associated driver account(මෙම ගිණුමට සම්බන්ද වු ධාවක ගිණුමක් නොමැත)");
           }
-        } else {
-          //check error and display message
-          Navigator.pop(context);
-          showSnackBar("Oops! this account has no Associated driver account");
-        }
-      });
-      HelperMethods.determinePosition().then((value) {
-        print("currentpossitionCheck $value");
-      });
+        });
+        HelperMethods.determinePosition().then((value) {
+          print("currentpossitionCheck $value");
+        });
+      }
     }
   }
 

@@ -3,9 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 
-
 class UserRepository {
-
   // static void registerUser(Driver newUser) async {
   //   try {
   //     UserCredential userCredential = await FirebaseAuth.instance
@@ -61,46 +59,51 @@ class UserRepository {
   //   return currentFireBaseUser.currentUser;
   // }
 
-  static void getCurrentUserInfo() async{
+  static void getCurrentUserInfo() async {
     FirebaseAuth currentFireBaseUser = FirebaseAuth.instance;
     String uId = currentFireBaseUser.currentUser.uid;
     print('User ID : ' + uId);
     print('User Email : ' + currentFireBaseUser.currentUser.email);
 
-
-    DatabaseReference userRef = FirebaseDatabase.instance.reference().child('drivers/${currentFireBaseUser.currentUser.uid}');
-    print('currentFireBaseUser.currentUser.uid :' + currentFireBaseUser.currentUser.uid);
-    userRef.once().then((DataSnapshot snapshot){
-      if(snapshot != null) {
+    DatabaseReference userRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFireBaseUser.currentUser.uid}/profile');
+    print('currentFireBaseUser.currentUser.uid :' +
+        currentFireBaseUser.currentUser.uid);
+    userRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
         print('getCurrentUserInfo -> User ID : ' + currentDriverInfo.fullName);
-      }else{
+      } else {
         print('snapshot is null');
       }
     });
   }
 
-  static Future<Driver> getCurrentUserInfoRet() async{
+  static Future<Driver> getCurrentUserInfoRet() async {
     Driver returnRef = new Driver();
     FirebaseAuth currentFireBaseUser = FirebaseAuth.instance;
     String uId = currentFireBaseUser.currentUser.uid;
     print('User ID : ' + uId);
     print('User Email : ' + currentFireBaseUser.currentUser.email);
 
-
-    DatabaseReference userRef = FirebaseDatabase.instance.reference().child('drivers/${currentFireBaseUser.currentUser.uid}');
-    print('currentFireBaseUser.currentUser.uid :' + currentFireBaseUser.currentUser.uid);
-     await userRef.once().then((DataSnapshot snapshot){
-      if(snapshot != null) {
-        returnRef=   Driver.fromSnapshot(snapshot);
-       // print('getCurrentUserInfo -> User ID : ' + currentUser.fullName);
-      }else{
+    DatabaseReference userRef = FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFireBaseUser.currentUser.uid}/profile');
+    print('currentFireBaseUser.currentUser.uid :' +
+        currentFireBaseUser.currentUser.uid);
+    await userRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null) {
+        returnRef = Driver.fromSnapshot(snapshot);
+        // print('getCurrentUserInfo -> User ID : ' + currentUser.fullName);
+      } else {
         print('snapshot is null');
       }
     });
 
-     return returnRef;
+    return returnRef;
   }
+
   //
   // static bool isLoggedIn() {
   //   var loggedInstate = false;
@@ -114,7 +117,7 @@ class UserRepository {
   //   return loggedInstate;
   // }
   //
-  static Future<bool> signOut() async{
+  static Future<bool> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
       return true;
@@ -126,6 +129,5 @@ class UserRepository {
       }
       return false;
     }
-
   }
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:greentaxi_driver/models/address.dart';
-import 'package:greentaxi_driver/models/history.dart';
+import 'package:greentaxi_driver/models/dateWiseSummary.dart';
 
 class AppData extends ChangeNotifier {
   Address pickupAdrress;
   Address destinationAdrress;
+  DateWiseSummary dateWiseSummary;
 
   void updatePickupAddress(Address picup) {
     pickupAdrress = picup;
@@ -18,28 +19,17 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
-  String earnings = '0';
-  int tripCount = 0;
-  List<String> tripHistoryKeys = [];
-  List<History> tripHistory = [];
-
-  void updateEarnings(String newEarnings){
-    earnings = newEarnings;
+  void updatedateWiseSummary(DateWiseSummary dws) {
+    dateWiseSummary = dws;
     notifyListeners();
   }
 
-  void updateTripCount(int newTripCount){
-    tripCount = newTripCount;
+  void updatedateWiseSummaryEarning(double newValue) {
+    if(dateWiseSummary == null){
+      dateWiseSummary = new DateWiseSummary(0,0,0,0,0,0,0);
+    }
+    dateWiseSummary.totalEarning += newValue;
     notifyListeners();
   }
 
-  void updateTripKeys(List<String> newKeys){
-    tripHistoryKeys = newKeys;
-    notifyListeners();
-  }
-
-  void updateTripHistory(History historyItem){
-    tripHistory.add(historyItem);
-    notifyListeners();
-  }
 }

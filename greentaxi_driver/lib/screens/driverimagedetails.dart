@@ -30,28 +30,27 @@ class _StartUpScrState extends State<DriverMoreInfo> {
   final picker = ImagePicker();
 
   var docCRMV;
-  var docDriversLicense ;
+  var docDriversLicense;
   var docinsurance;
   var docVehicleLicense;
   var docAccountDetails;
   var _imageFile;
-
 
   Future pickImage(String functionType) async {
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
     print("fileName : ${pickedFile.path != null ? pickedFile.path : ""}");
     HelperMethods.showProgressDialog(context);
     setState(() {
-      if(functionType == "CRMV"){
+      if (functionType == "CRMV") {
         ///Need to handle error The getter 'path' was called on null.
         docCRMV = io.File(pickedFile.path);
-      }else  if(functionType == "DL"){
+      } else if (functionType == "DL") {
         docDriversLicense = io.File(pickedFile.path);
-      }else  if(functionType == "INS"){
+      } else if (functionType == "INS") {
         docinsurance = io.File(pickedFile.path);
-      }else  if(functionType == "VL"){
+      } else if (functionType == "VL") {
         docVehicleLicense = io.File(pickedFile.path);
-      }else  if(functionType == "ACD"){
+      } else if (functionType == "ACD") {
         docAccountDetails = io.File(pickedFile.path);
       }
       uploadFile(functionType);
@@ -62,27 +61,29 @@ class _StartUpScrState extends State<DriverMoreInfo> {
     String fileName = currentFirebaseUser.uid + ".jpg";
     String ImageFileName = "";
     try {
-      if(functionType == "CRMV"){
+      if (functionType == "CRMV") {
         _imageFile = docCRMV;
         ImageFileName = "docCRMV.jpg";
-      }else  if(functionType == "DL"){
+      } else if (functionType == "DL") {
         _imageFile = docDriversLicense;
         ImageFileName = "docDriversLicense.jpg";
-      }else  if(functionType == "INS"){
+      } else if (functionType == "INS") {
         _imageFile = docinsurance;
         ImageFileName = "docinsurance.jpg";
-      }else  if(functionType == "VL"){
+      } else if (functionType == "VL") {
         _imageFile = docVehicleLicense;
         ImageFileName = "docVehicleLicense.jpg";
-      }else  if(functionType == "ACD"){
+      } else if (functionType == "ACD") {
         _imageFile = docAccountDetails;
         ImageFileName = "docAccountDetails.jpg";
       }
 
       await firebase_storage.FirebaseStorage.instance
-          .ref().child('$userDocumentPath/${currentFirebaseUser.uid}/$ImageFileName')
+          .ref()
+          .child('$userDocumentPath/${currentFirebaseUser.uid}/$ImageFileName')
           .putFile(_imageFile);
-      print("Image Upload Done To $userDocumentPath/${currentFirebaseUser.uid}/$ImageFileName");
+      print(
+          "Image Upload Done To $userDocumentPath/${currentFirebaseUser.uid}/$ImageFileName");
       print("Getting image from web");
       Navigator.pop(context);
       //getImage();
@@ -107,7 +108,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
         };
         dbRef.set(vehicleMap);
         print('Save Done');
-        Navigator.pushNamedAndRemoveUntil(context, MainPage.Id, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+            context, MainPage.Id, (route) => false);
       } else {
         print('Current User nUll');
       }
@@ -122,15 +124,16 @@ class _StartUpScrState extends State<DriverMoreInfo> {
     }
   }
 
-
   void showSnackBar(String title) {
     final snackbar = SnackBar(
       content: Text(
-        title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
+        title,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15),
+      ),
     );
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
-
 
   String getCurrentUserName() {
     var cusName = 'xxx';
@@ -145,10 +148,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         key: scaffoldKey,
         body: SafeArea(
@@ -156,7 +157,7 @@ class _StartUpScrState extends State<DriverMoreInfo> {
             padding: EdgeInsets.only(top: 5, left: 20, right: 20),
             child: SingleChildScrollView(
               child: Column(
-                children: <Widget> [
+                children: <Widget>[
                   Container(
                     child: Stack(
                       children: <Widget>[
@@ -164,21 +165,27 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           //padding: EdgeInsets.fromLTRB(50.0, 10.0, 0.0, 0.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children:<Widget> [
+                            children: <Widget>[
                               Text(
                                 'GO',
-                                style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                               Text(
                                 '2',
-                                style:
-                                GoogleFonts.rubik(fontSize: 80.0, fontWeight: FontWeight.bold, color: Color(0xFF424242) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 80.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF424242)),
                               ),
                               Text(
                                 'GO',
-                                style:
-                                GoogleFonts.rubik(fontSize: 60.0, fontWeight: FontWeight.bold, color: Color(0xFFff6f00) ),
+                                style: GoogleFonts.rubik(
+                                    fontSize: 60.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFff6f00)),
                               ),
                             ],
                           ),
@@ -199,13 +206,11 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                     ),
                   ),
                   Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white
-                    ),
+                    decoration: BoxDecoration(color: Colors.white),
                     child: Column(
                       children: <Widget>[
-
-                        Text('Additional Documents',
+                        Text(
+                          'Additional Documents',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.roboto(
                               fontSize: 20, fontWeight: FontWeight.bold),
@@ -217,71 +222,96 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           padding: EdgeInsets.all(10.0),
                           child: Column(
                             children: <Widget>[
-                              SizedBox(height: 10,),
-                              Text('Certificate of Registration of Motor Vehicle(මෝටර් වාහනය ලියාපදිංචි කිරීමේ සහතිකය)',
-                                style: GoogleFonts.roboto(color: Color(0xFFef6c00),
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                height: 10,
                               ),
-                              SizedBox(height: 5,),
+                              Text(
+                                'Certificate of Registration of Motor Vehicle(මෝටර් වාහනය ලියාපදිංචි කිරීමේ සහතිකය)',
+                                style: GoogleFonts.roboto(
+                                    color: Color(0xFFef6c00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
                               Container(
                                 width: 400,
                                 height: 130,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFf5f5f5),
-                                  border: Border.all(color: Color(0xFF9e9e9e))
-                                ),
+                                    color: Color(0xFFf5f5f5),
+                                    border:
+                                        Border.all(color: Color(0xFF9e9e9e))),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
-                                    children:<Widget> [
-                                      docCRMV != null?
-                                        Image.file(docCRMV,width: 100, height: 120 , fit: BoxFit.cover,)
-                                        :
-                                        Image.asset("images/icons/booking.png",width: 100, height: 120 , fit: BoxFit.cover,),
-                                        SizedBox(width: 5,),
-                                        Expanded(
-                                          child: Column(
-                                            children:<Widget> [
-                                              Container(
-                                                width: 220,
-                                                child: Text('Image details',
-                                                  style: GoogleFonts.roboto(
-                                                      fontSize: 14, fontWeight: FontWeight.bold),
-                                                ),
+                                    children: <Widget>[
+                                      docCRMV != null
+                                          ? Image.file(
+                                              docCRMV,
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "images/icons/booking.png",
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          children: <Widget>[
+                                            Container(
+                                              width: 220,
+                                              child: Text(
+                                                'Image details',
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
-                                              BrandDivider(),
-                                              Container(
-                                                width: 220,
-                                                child: Text('Click the "Browse Image" button to insert image',
-                                                  style: GoogleFonts.roboto(
-                                                      fontSize: 14, fontWeight: FontWeight.normal),
-                                                ),
+                                            ),
+                                            BrandDivider(),
+                                            Container(
+                                              width: 220,
+                                              child: Text(
+                                                'Click the "Browse Image" button to insert image',
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
                                               ),
-                                              SizedBox(height: 5,),
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 10),
-                                                child: Row(
-                                                  children: <Widget>[
-                                                    Container(
-                                                      color: Colors.red,
-                                                    ),
-                                                    TaxiButtonSmall(
-                                                      title: "Browse Image",
-                                                      color:Color(0xFF424242)  ,
-                                                      onPress: (){
-                                                        pickImage("CRMV");
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        )
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Container(
+                                                    color: Colors.red,
+                                                  ),
+                                                  TaxiButtonSmall(
+                                                    title: "Browse Image",
+                                                    color: Color(0xFF424242),
+                                                    onPress: () {
+                                                      pickImage("CRMV");
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      )
                                     ],
                                   ),
-
-
                                 ),
                               ),
                             ],
@@ -294,49 +324,76 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           padding: EdgeInsets.all(10.0),
                           child: Column(
                             children: <Widget>[
-                              SizedBox(height: 10,),
-                              Text('Drivers License(රියැදුරු බලපත්‍රය)',
-                                style: GoogleFonts.roboto(color: Color(0xFFef6c00),
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                height: 10,
                               ),
-                              SizedBox(height: 5,),
+                              Text(
+                                'Drivers License(රියැදුරු බලපත්‍රය)',
+                                style: GoogleFonts.roboto(
+                                    color: Color(0xFFef6c00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
                               Container(
                                 width: 400,
                                 height: 130,
                                 decoration: BoxDecoration(
                                     color: Color(0xFFf5f5f5),
-                                    border: Border.all(color: Color(0xFF9e9e9e))
-                                ),
+                                    border:
+                                        Border.all(color: Color(0xFF9e9e9e))),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
-                                    children:<Widget> [
-                                      docDriversLicense != null?
-                                      Image.file(docDriversLicense,width: 100, height: 120 , fit: BoxFit.cover,)
-                                          :
-                                      Image.asset("images/icons/booking.png",width: 100, height: 120 , fit: BoxFit.cover,),
-                                      SizedBox(width: 5,),
+                                    children: <Widget>[
+                                      docDriversLicense != null
+                                          ? Image.file(
+                                              docDriversLicense,
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "images/icons/booking.png",
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
                                       Expanded(
                                         child: Column(
-                                          children:<Widget> [
+                                          children: <Widget>[
                                             Container(
                                               width: 220,
-                                              child: Text('Image details',
+                                              child: Text(
+                                                'Image details',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ),
                                             BrandDivider(),
                                             Container(
                                               width: 220,
-                                              child: Text('Click the "Browse Image" button to insert image',
+                                              child: Text(
+                                                'Click the "Browse Image" button to insert image',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.normal),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
                                               ),
                                             ),
-                                            SizedBox(height: 5,),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
                                             Padding(
-                                              padding: const EdgeInsets.only(left: 10),
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
                                               child: Row(
                                                 children: <Widget>[
                                                   Container(
@@ -344,8 +401,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                                                   ),
                                                   TaxiButtonSmall(
                                                     title: "Browse Image",
-                                                    color:Color(0xFF424242)  ,
-                                                    onPress: (){
+                                                    color: Color(0xFF424242),
+                                                    onPress: () {
                                                       pickImage("DL");
                                                     },
                                                   ),
@@ -369,49 +426,76 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           padding: EdgeInsets.all(10.0),
                           child: Column(
                             children: <Widget>[
-                              SizedBox(height: 10,),
-                              Text('Motor Insurance Policy(මෝටර් වාහන රක්ෂණ ඔප්පුව)',
-                                style: GoogleFonts.roboto(color: Color(0xFFef6c00),
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                height: 10,
                               ),
-                              SizedBox(height: 5,),
+                              Text(
+                                'Motor Insurance Policy(මෝටර් වාහන රක්ෂණ ඔප්පුව)',
+                                style: GoogleFonts.roboto(
+                                    color: Color(0xFFef6c00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
                               Container(
                                 width: 400,
                                 height: 130,
                                 decoration: BoxDecoration(
                                     color: Color(0xFFf5f5f5),
-                                    border: Border.all(color: Color(0xFF9e9e9e))
-                                ),
+                                    border:
+                                        Border.all(color: Color(0xFF9e9e9e))),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
-                                    children:<Widget> [
-                                      docinsurance != null?
-                                      Image.file(docinsurance,width: 100, height: 120 , fit: BoxFit.cover,)
-                                          :
-                                      Image.asset("images/icons/booking.png",width: 100, height: 120 , fit: BoxFit.cover,),
-                                      SizedBox(width: 5,),
+                                    children: <Widget>[
+                                      docinsurance != null
+                                          ? Image.file(
+                                              docinsurance,
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "images/icons/booking.png",
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
                                       Expanded(
                                         child: Column(
-                                          children:<Widget> [
+                                          children: <Widget>[
                                             Container(
                                               width: 220,
-                                              child: Text('Image details',
+                                              child: Text(
+                                                'Image details',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ),
                                             BrandDivider(),
                                             Container(
                                               width: 220,
-                                              child: Text('Click the "Browse Image" button to insert image',
+                                              child: Text(
+                                                'Click the "Browse Image" button to insert image',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.normal),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
                                               ),
                                             ),
-                                            SizedBox(height: 5,),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
                                             Padding(
-                                              padding: const EdgeInsets.only(left: 10),
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
                                               child: Row(
                                                 children: <Widget>[
                                                   Container(
@@ -419,8 +503,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                                                   ),
                                                   TaxiButtonSmall(
                                                     title: "Browse Image",
-                                                    color:Color(0xFF424242)  ,
-                                                    onPress: (){
+                                                    color: Color(0xFF424242),
+                                                    onPress: () {
                                                       pickImage("INS");
                                                     },
                                                   ),
@@ -444,49 +528,76 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           padding: EdgeInsets.all(10.0),
                           child: Column(
                             children: <Widget>[
-                              SizedBox(height: 10,),
-                              Text('Vehicle Revenue License(වාහන අදායම් බලපත්‍රය)',
-                                style: GoogleFonts.roboto(color: Color(0xFFef6c00),
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                height: 10,
                               ),
-                              SizedBox(height: 5,),
+                              Text(
+                                'Vehicle Revenue License(වාහන අදායම් බලපත්‍රය)',
+                                style: GoogleFonts.roboto(
+                                    color: Color(0xFFef6c00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
                               Container(
                                 width: 400,
                                 height: 130,
                                 decoration: BoxDecoration(
                                     color: Color(0xFFf5f5f5),
-                                    border: Border.all(color: Color(0xFF9e9e9e))
-                                ),
+                                    border:
+                                        Border.all(color: Color(0xFF9e9e9e))),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
-                                    children:<Widget> [
-                                      docVehicleLicense != null?
-                                      Image.file(docVehicleLicense,width: 100, height: 120 , fit: BoxFit.cover,)
-                                          :
-                                      Image.asset("images/icons/booking.png",width: 100, height: 120 , fit: BoxFit.cover,),
-                                      SizedBox(width: 5,),
+                                    children: <Widget>[
+                                      docVehicleLicense != null
+                                          ? Image.file(
+                                              docVehicleLicense,
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "images/icons/booking.png",
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
                                       Expanded(
                                         child: Column(
-                                          children:<Widget> [
+                                          children: <Widget>[
                                             Container(
                                               width: 220,
-                                              child: Text('Image details',
+                                              child: Text(
+                                                'Image details',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ),
                                             BrandDivider(),
                                             Container(
                                               width: 220,
-                                              child: Text('Click the "Browse Image" button to insert image',
+                                              child: Text(
+                                                'Click the "Browse Image" button to insert image',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.normal),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
                                               ),
                                             ),
-                                            SizedBox(height: 5,),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
                                             Padding(
-                                              padding: const EdgeInsets.only(left: 10),
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
                                               child: Row(
                                                 children: <Widget>[
                                                   Container(
@@ -494,8 +605,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                                                   ),
                                                   TaxiButtonSmall(
                                                     title: "Browse Image",
-                                                    color:Color(0xFF424242)  ,
-                                                    onPress: (){
+                                                    color: Color(0xFF424242),
+                                                    onPress: () {
                                                       pickImage("VL");
                                                     },
                                                   ),
@@ -519,49 +630,76 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                           padding: EdgeInsets.all(10.0),
                           child: Column(
                             children: <Widget>[
-                              SizedBox(height: 10,),
-                              Text('Bank Passbook Copy(බැංකු පාස් පොත් පිටපත)',
-                                style: GoogleFonts.roboto(color: Color(0xFFef6c00),
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                height: 10,
                               ),
-                              SizedBox(height: 5,),
+                              Text(
+                                'Bank Passbook Copy(බැංකු පාස් පොත් පිටපත)',
+                                style: GoogleFonts.roboto(
+                                    color: Color(0xFFef6c00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
                               Container(
                                 width: 400,
                                 height: 130,
                                 decoration: BoxDecoration(
                                     color: Color(0xFFf5f5f5),
-                                    border: Border.all(color: Color(0xFF9e9e9e))
-                                ),
+                                    border:
+                                        Border.all(color: Color(0xFF9e9e9e))),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Row(
-                                    children:<Widget> [
-                                      docAccountDetails != null?
-                                      Image.file(docAccountDetails,width: 100, height: 120 , fit: BoxFit.cover,)
-                                          :
-                                      Image.asset("images/icons/booking.png",width: 100, height: 120 , fit: BoxFit.cover,),
-                                      SizedBox(width: 5,),
+                                    children: <Widget>[
+                                      docAccountDetails != null
+                                          ? Image.file(
+                                              docAccountDetails,
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Image.asset(
+                                              "images/icons/booking.png",
+                                              width: 100,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
                                       Expanded(
                                         child: Column(
-                                          children:<Widget> [
+                                          children: <Widget>[
                                             Container(
                                               width: 220,
-                                              child: Text('Image details',
+                                              child: Text(
+                                                'Image details',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ),
                                             BrandDivider(),
                                             Container(
                                               width: 220,
-                                              child: Text('Click the "Browse Image" button to insert image',
+                                              child: Text(
+                                                'Click the "Browse Image" button to insert image',
                                                 style: GoogleFonts.roboto(
-                                                    fontSize: 14, fontWeight: FontWeight.normal),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.normal),
                                               ),
                                             ),
-                                            SizedBox(height: 5,),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
                                             Padding(
-                                              padding: const EdgeInsets.only(left: 10),
+                                              padding: const EdgeInsets.only(
+                                                  left: 10),
                                               child: Row(
                                                 children: <Widget>[
                                                   Container(
@@ -569,8 +707,8 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                                                   ),
                                                   TaxiButtonSmall(
                                                     title: "Browse Image",
-                                                    color:Color(0xFF424242)  ,
-                                                    onPress: (){
+                                                    color: Color(0xFF424242),
+                                                    onPress: () {
                                                       pickImage("ACD");
                                                     },
                                                   ),
@@ -587,12 +725,9 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                             ],
                           ),
                         ),
-
                       ],
                     ),
-
                   ),
-
                   TaxiButton(
                     title: "Complete Registration",
                     color: Color(0xFFff6f00),
@@ -601,53 +736,65 @@ class _StartUpScrState extends State<DriverMoreInfo> {
                       if (docCRMV == null) {
                         showSnackBar(
                             'Please insert Certificate of Registration of Motor Vehicle (කරුණාකර මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය ඇතුළත් කරන්න)');
-                        print('Please insert Certificate of Registration of Motor Vehicle (කරුණාකර මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය ඇතුළත් කරන්න)');
+                        print(
+                            'Please insert Certificate of Registration of Motor Vehicle (කරුණාකර මෝටර් වාහන ලියාපදිංචි කිරීමේ සහතිකය ඇතුළත් කරන්න)');
                         return;
                       }
                       if (docDriversLicense == null) {
                         showSnackBar(
                             'Please insert Drivers License (කරුණාකර රියදුරු බලපත්‍රය ඇතුළත් කරන්න)');
-                        print('Please insert Drivers License (කරුණාකර රියදුරු බලපත්‍රය ඇතුළත් කරන්න)');
+                        print(
+                            'Please insert Drivers License (කරුණාකර රියදුරු බලපත්‍රය ඇතුළත් කරන්න)');
                         return;
                       }
                       if (docinsurance == null) {
                         showSnackBar(
                             'Please insert motor insurance policy (කරුණාකර මෝටර් වාහන රක්ෂණ ඔප්පුව ඇතුළත් කරන්න)');
-                        print('Please insert motor insurance policy (කරුණාකර මෝටර් වාහන රක්ෂණ ඔප්පුව ඇතුළත් කරන්න)');
+                        print(
+                            'Please insert motor insurance policy (කරුණාකර මෝටර් වාහන රක්ෂණ ඔප්පුව ඇතුළත් කරන්න)');
                         return;
                       }
                       if (docVehicleLicense == null) {
                         showSnackBar(
                             'Please insert Vehicle Revenue License (කරුණාකර වාහන ආදායම් බලපත්‍රය ඇතුළත් කරන්න)');
-                        print('Please insert Vehicle Revenue License (කරුණාකර වාහන ආදායම් බලපත්‍රය ඇතුළත් කරන්න)');
+                        print(
+                            'Please insert Vehicle Revenue License (කරුණාකර වාහන ආදායම් බලපත්‍රය ඇතුළත් කරන්න)');
                         return;
                       }
                       if (docAccountDetails == null) {
                         showSnackBar(
                             'Please insert Bank Passbook Copy (කරුණාකර බැංකු පාස් පොත් පිටපත ඇතුළත් කරන්න)');
-                        print('Please insert Bank Passbook Copy (කරුණාකර බැංකු පාස් පොත් පිටපත ඇතුළත් කරන්න)');
+                        print(
+                            'Please insert Bank Passbook Copy (කරුණාකර බැංකු පාස් පොත් පිටපත ඇතුළත් කරන්න)');
                         return;
                       }
 
-                      DatabaseReference dbRef2 = FirebaseDatabase.instance.reference().child(
-                          'drivers/${FirebaseAuth.instance.currentUser.uid}/accountStatus');
+                      DatabaseReference dbRef2 = FirebaseDatabase.instance
+                          .reference()
+                          .child(
+                              'drivers/${FirebaseAuth.instance.currentUser.uid}/profile/accountStatus');
                       dbRef2.set("Pending");
+
+                      DatabaseReference dbRef3 = FirebaseDatabase.instance
+                          .reference()
+                          .child(
+                              'listTree/driverList/${FirebaseAuth.instance.currentUser.uid}/accountStatus');
+                      dbRef3.set("Pending");
+
                       dbRef2 = null;
+                      dbRef3 = null;
 
-                      Navigator.pushNamedAndRemoveUntil(context, UserStatusScreenPending.Id, (route) => false);
-
+                      Navigator.pushNamedAndRemoveUntil(context,
+                          UserStatusScreenPending.Id, (route) => false);
                     },
                   ),
-
-                  SizedBox(height: 20,)
+                  SizedBox(
+                    height: 20,
+                  )
                 ],
               ),
             ),
           ),
-        )
-    );
-
-
-
+        ));
   }
 }

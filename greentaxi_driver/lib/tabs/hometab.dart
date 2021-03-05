@@ -13,11 +13,16 @@ import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/helpers/pushnotificationservice.dart';
 import 'package:greentaxi_driver/models/drivers.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/models/vehicleinfo.dart';
+import 'package:greentaxi_driver/screens/misc/requesttrip.dart';
 import 'package:greentaxi_driver/screens/newtripspage.dart';
+import 'package:greentaxi_driver/shared/repository/sales_service.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/AvailabilityButton.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
 import 'package:greentaxi_driver/widgets/ConfirmSheet.dart';
+import 'package:greentaxi_driver/widgets/TaxiButton.dart';
+import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeTab extends StatefulWidget {
@@ -26,18 +31,13 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
-
-
-
   var earnignController = TextEditingController();
   var passwordController = TextEditingController();
-
 
   GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
 
   DatabaseReference tripRequestRef;
-
 
   var geoLocator = Geolocator();
   var locationOptions = LocationOptions(
@@ -60,9 +60,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     try {
       Position position = await HelperMethods.determinePositionRaw();
       // setState(() {
-        currentPosition = position;
-        LatLng pos = LatLng(position.latitude, position.longitude);
-        driverInitialPos = pos;
+      currentPosition = position;
+      LatLng pos = LatLng(position.latitude, position.longitude);
+      driverInitialPos = pos;
       // });
     } catch (e) {
       print('Error: ${e.toString()}');
@@ -73,59 +73,85 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     currentFirebaseUser = FirebaseAuth.instance.currentUser;
     DatabaseReference driverRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}');
+        .child('drivers/${currentFirebaseUser.uid}/profile');
 
     driverRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
         print("Came");
         print(currentDriverInfo.fullName);
-        print("onlineStatus : ${snapshot.value["onlineStatus"] != null ?snapshot.value["onlineStatus"] : ""}");
+        print(
+            "onlineStatus : ${snapshot.value["onlineStatus"] != null ? snapshot.value["onlineStatus"] : ""}");
 
-        if(snapshot.value["onlineStatus"] != null && snapshot.value["onlineStatus"] == "online"){
+        if (snapshot.value["onlineStatus"] != null &&
+            snapshot.value["onlineStatus"] == "online") {
           isOnlineStatus = true;
         }
-        if(snapshot.value["earnings"] != null){
-          print("earnings ${snapshot.value["earnings"].toString()}" );
+        if (snapshot.value["earnings"] != null) {
+          print("earnings ${snapshot.value["earnings"].toString()}");
           earnings = double.tryParse(snapshot.value["earnings"].toString());
         }
 
-        if(snapshot.value["inMiddleOfTrip"] != null){
-          print("inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}" );
-          inMiddleOfTrip =  snapshot.value["inMiddleOfTrip"].toString().toLowerCase() == 'true';
+        if (snapshot.value["inMiddleOfTrip"] != null) {
+          print(
+              "inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
+          inMiddleOfTrip =
+              snapshot.value["inMiddleOfTrip"].toString().toLowerCase() ==
+                  'true';
         }
-        if(snapshot.value["rideId"] != null){
-          print("existingRideId  ${snapshot.value["rideId"].toString()}" );
+        if (snapshot.value["rideId"] != null) {
+          print("existingRideId  ${snapshot.value["rideId"].toString()}");
           existingRideId = snapshot.value["rideId"];
         }
-        if(inMiddleOfTrip){
+        if (inMiddleOfTrip) {
           restartRide();
         }
-
       }
     });
+
+    DataSnapshot vehicleRef = await FirebaseDatabase.instance
+        .reference()
+        .child('drivers/${currentFirebaseUser.uid}/vehicle_details')
+        .once();
+
+    currentVehicleInfomation = VehicleInfomation.fromShapShot(vehicleRef);
+
+    // vehicleRef.once().then((DataSnapshot snapshot) {
+    //   if (snapshot.value != null) {
+    //     currentVehicleInfomation = VehicleInfomation.fromShapShot(snapshot);
+    //   }
+    // });
+
+
+    print("Vehicle type :- ${currentVehicleInfomation.vehicleType}");
+    print("Vehicle type VtypeConverter :- ${VtypeConverter(currentVehicleInfomation.vehicleType)}");
+
 
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context, driverInitialPos);
     pushNotificationService.getToken();
-
   }
 
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  void showSnackBar(String title){
+  void showSnackBar(String title) {
     final snackbar = SnackBar(
-      content: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 15),),
+      content: Text(
+        title,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15),
+      ),
     );
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
 
-
-  void availabilityButtonPress() async{
+  void availabilityButtonPress() async {
     //check network availability
     var connectivityResult = await Connectivity().checkConnectivity();
-    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+    if (connectivityResult != ConnectivityResult.mobile &&
+        connectivityResult != ConnectivityResult.wifi) {
+      showAlertGlobal(context, "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
       return;
     }
 
@@ -144,22 +170,24 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     }
   }
 
-
   void checkAvailablity(context, String rideID) {
-
-    DatabaseReference rideRef = FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
-    rideRef.once().then((DataSnapshot snapshot){
-
+    DatabaseReference rideRef =
+        FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
+    rideRef.once().then((DataSnapshot snapshot) {
       // Navigator.pop(context);
-      print("availabilityButtonPress snapshot ========================================================================================> $snapshot");
-      if(snapshot.value != null){
-
-        double pickupLat = double.parse(snapshot.value['location']['latitude'].toString());
-        double pickupLng = double.parse(snapshot.value['location']['longitude'].toString());
+      print(
+          "availabilityButtonPress snapshot ========================================================================================> $snapshot");
+      if (snapshot.value != null) {
+        double pickupLat =
+            double.parse(snapshot.value['location']['latitude'].toString());
+        double pickupLng =
+            double.parse(snapshot.value['location']['longitude'].toString());
         String pickupAddress = snapshot.value['pickup_address'].toString();
 
-        double destinationLat = double.parse(snapshot.value['destination']['latitude'].toString());
-        double destinationLng = double.parse(snapshot.value['destination']['longitude'].toString());
+        double destinationLat =
+            double.parse(snapshot.value['destination']['latitude'].toString());
+        double destinationLng =
+            double.parse(snapshot.value['destination']['longitude'].toString());
 
         String destinationAddress = snapshot.value['destination_address'];
         String paymentMethod = snapshot.value['payment_method'];
@@ -179,18 +207,19 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         tripDetails.riderPhone = riderPhone;
         tripDetails.status = snapshot.value['status'];
 
-        if(snapshot.value['ownDriver'] != null){
+        if (snapshot.value['ownDriver'] != null) {
           tripDetails.commissionedDriverId = "system";
           tripDetails.commissionApplicable = false;
-        }else if (snapshot.value['ownDriver']  == "system") {
+        } else if (snapshot.value['ownDriver'] == "system") {
           tripDetails.commissionedDriverId = "system";
           tripDetails.commissionApplicable = false;
-        }else{
-          tripDetails.commissionedDriverId = snapshot.value['ownDriver'] ;
+        } else {
+          tripDetails.commissionedDriverId = snapshot.value['ownDriver'];
           tripDetails.commissionApplicable = true;
         }
 
-        print("tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
+        print(
+            "tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
 
         Navigator.pop(context);
 
@@ -198,41 +227,49 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  NewTripPage(
-                    tripDetails: tripDetails,restartRide: true,
-                  ),
+              builder: (context) => NewTripPage(
+                tripDetails: tripDetails,
+                restartRide: true,
+              ),
             ));
       }
-
     });
   }
 
-
   restartRide() async {
-    print("On _checkWifi inMiddleOfTrip = $inMiddleOfTrip  existingRideId = $existingRideId");
-    if(inMiddleOfTrip) {
-      showAlert(context,existingRideId);
+    print(
+        "On _checkWifi inMiddleOfTrip = $inMiddleOfTrip  existingRideId = $existingRideId");
+    if (inMiddleOfTrip) {
+      showAlert(context, existingRideId);
     }
   }
 
-  void showAlert(BuildContext context , String existingRideIdx) {
+  void showAlert(BuildContext context, String existingRideIdx) {
     showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) =>
-            AlertDialog(
-              title: Center(child: Column(
+        builder: (BuildContext context) => AlertDialog(
+              title: Center(
+                  child: Column(
                 children: <Widget>[
-                  Icon(Icons.home, color: Colors.black54, size: 80,),
-                  SizedBox(height: 20,),
-                  Text('Unfinished ride detected.',
-                    style: GoogleFonts.roboto(fontSize: 20),),
+                  Icon(
+                    Icons.home,
+                    color: Colors.black54,
+                    size: 80,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Unfinished ride detected.',
+                    style: GoogleFonts.roboto(fontSize: 20),
+                  ),
                 ],
               )),
               content: Text(
                 "The system close in middle of a ride. please press ok to continue with the ride!",
-                style: GoogleFonts.roboto(fontSize: 17),),
+                style: GoogleFonts.roboto(fontSize: 17),
+              ),
               actions: <Widget>[
                 Center(
                   child: FlatButton(
@@ -243,12 +280,8 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
                   ),
                 ),
               ],
-            )
-    );
+            ));
   }
-
-
-
 
   @override
   void initState() {
@@ -290,13 +323,19 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           width: double.infinity,
           decoration: boxDecoDefualt,
         ),
+
         ///Menu Buttons *************************************************************************************************************
         Positioned(
           top: 200,
           left: 15,
           child: GestureDetector(
-            onTap: () {
-
+            onTap: () async {
+              //showAlertBookTrip(context,"Book a trip for customer");
+              var respons = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SimpleRecorder(),
+                  ));
             },
             child: Container(
               alignment: Alignment.center,
@@ -306,15 +345,21 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
-                children:<Widget> [
-                  SizedBox(width: 10,),
+                children: <Widget>[
+                  SizedBox(
+                    width: 10,
+                  ),
                   Icon(
-                    Icons.call ,
+                    Icons.call,
                     color: Color(0xfff57f17),
                   ),
-                  SizedBox(width: 8,),
-                  Text("Book a trip",style: GoogleFonts.roboto(fontSize: 14),),
-
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                    "Book a trip",
+                    style: GoogleFonts.roboto(fontSize: 14),
+                  ),
                 ],
               ),
             ),
@@ -326,99 +371,131 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           left: 0,
           right: 0,
           child: Column(
-            children:<Widget> [
+            children: <Widget>[
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   AvailabilityButton(
                     title: availabilityTitle,
                     color: availabilityColor,
-                    onPressed: () async  {
+                    onPressed: () async {
                       //check network availability
-                      var connectivityResult = await Connectivity().checkConnectivity();
-                      if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-                        showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+                      var connectivityResult =
+                          await Connectivity().checkConnectivity();
+                      if (connectivityResult != ConnectivityResult.mobile &&
+                          connectivityResult != ConnectivityResult.wifi) {
+                        showAlertGlobal(context, "No internet Connection",
+                            'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
                         return;
                       }
 
                       print("ConfirmSheet onPressed");
                       bool error = false;
-                      var location = await HelperMethods.determinePositionRaw().catchError((Object err){
+                      var location = await HelperMethods.determinePositionRaw()
+                          .catchError((Object err) {
                         print("Call location in catchError $error");
                         error = true;
                       });
 
                       print("Call location in ConfirmSheet $error");
 
-                      if(error){
-                        showToastRaw(context,"කරුණාකර  ඔබගේ දුරකතනයේ (ස්ථාන සේවා)Location Service සක්‍රිය කරන්න");
-                      }else {
+                      if (error) {
+                        showToastRaw(context,
+                            "කරුණාකර  ඔබගේ දුරකතනයේ (ස්ථාන සේවා)Location Service සක්‍රිය කරන්න");
+                      } else {
                         showModalBottomSheet(
                           isDismissible: false,
                           context: context,
-                          builder: (BuildContext context) =>
-                              ConfirmSheet(
-                                title: (!isAvailable) ? 'GO ONLINE' : 'GO OFFLINE',
-                                subtitle: (!isAvailable)
-                                    ? 'You are about to become available to receive trip requests'
-                                    : 'you will stop receiving new trip requests',
-                                onPressed: () {
-                                  GoOnline();
-                                  getLocationUpdates();
-                                  if (!isAvailable) {
-                                    GoOnline();
-                                    getLocationUpdates();
-                                    Navigator.pop(context);
-                                    setState(() {
-                                      availabilityColor = Colors.greenAccent;
-                                      availabilityTitle = 'GO OFFLINE';
-                                      isAvailable = true;
-                                    });
-                                  } else {
-                                    GoOffline();
-                                    Navigator.pop(context);
-                                    setState(() {
-                                      availabilityColor = Colors.redAccent;
-                                      availabilityTitle = 'GO ONLINE';
-                                      isAvailable = false;
-                                    });
-                                  }
-                                },
-                              ),
+                          builder: (BuildContext context) => ConfirmSheet(
+                            title: (!isAvailable) ? 'GO ONLINE' : 'GO OFFLINE',
+                            subtitle: (!isAvailable)
+                                ? 'You are about to become available to receive trip requests'
+                                : 'you will stop receiving new trip requests',
+                            onPressed: () {
+                              GoOnline();
+                              getLocationUpdates();
+                              if (!isAvailable) {
+                                GoOnline();
+                                getLocationUpdates();
+                                Navigator.pop(context);
+                                setState(() {
+                                  availabilityColor = Colors.greenAccent;
+                                  availabilityTitle = 'GO OFFLINE';
+                                  isAvailable = true;
+                                });
+                              } else {
+                                GoOffline();
+                                Navigator.pop(context);
+                                setState(() {
+                                  availabilityColor = Colors.redAccent;
+                                  availabilityTitle = 'GO ONLINE';
+                                  isAvailable = false;
+                                });
+                              }
+                            },
+                          ),
                         );
                       }
-
                     },
                   ),
                 ],
               ),
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               BrandDivider(),
-              SizedBox(height: 10,),
-              Container(
-                child: Padding(
-                  padding:  EdgeInsets.only(left: 20,right: 20),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                    children:<Widget> [
-                      _textTodayEarnings(),
-                      SizedBox(width: 10,),
-                      _textTodayCommission(),
+              SizedBox(
+                height: 10,
+              ),
+              FutureBuilder(
+                  future: SalesService.getdateWiseSummary(context),
+                  builder: (BuildContext context, AsyncSnapshot snapshot){
+                        if(snapshot.hasData){
+                          return Container(
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  _textTodayEarnings(snapshot.data.totalEarning),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  _textTodayCommission(snapshot.data.totalCommission),
+                                ],
+                              ),
+                            ),
+                          );
+                        }else{
+                          return Container(
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  _textTodayEarnings(0.00),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  _textTodayCommission(0.00),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                  }
 
-
-                    ],
-                  ),
-                ),
               )
+
+
             ],
           ),
         )
-
       ],
     );
   }
 
-  Widget _textTodayEarnings() {
+  Widget _textTodayEarnings(double earning ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -435,16 +512,17 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           decoration: kBoxDecorationStyle,
           height: 40.0,
           width: 150,
-          child: Text("LKR ${earnings.toString()}",
-            style: GoogleFonts.roboto(
-                color: Colors.white, fontSize: 18,fontWeight: FontWeight.bold)
-            ),
-          ),
+          child: Text("LKR $earning",
+              style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
+        ),
       ],
     );
   }
 
-  Widget _textTodayCommission() {
+  Widget _textTodayCommission(double comm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -461,15 +539,16 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           decoration: kBoxDecorationStyle,
           height: 40.0,
           width: 150,
-          child: Text( "LKR 0.00",textAlign: TextAlign.center,
+          child: Text("LKR $comm",
+              textAlign: TextAlign.center,
               style: GoogleFonts.roboto(
-                color: Colors.white, fontSize: 18,fontWeight: FontWeight.bold)
-          ),
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
         ),
       ],
     );
   }
-
 
   void _launchMapsUrl(LatLng _originLatLng, LatLng _destinationLatLng) async {
     final url =
@@ -495,28 +574,35 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
 
   void GoOnline() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+    if (connectivityResult != ConnectivityResult.mobile &&
+        connectivityResult != ConnectivityResult.wifi) {
+      showAlertGlobal(context, "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
       return;
     }
     isOnline = true;
     cancelLocationUpdate = false;
     Geofire.initialize('driversAvailable');
     print("Geofire Started");
-    Geofire.setLocation(currentFirebaseUser.uid, driverInitialPos != null ?driverInitialPos.latitude : posError.latitude,
-        driverInitialPos != null ? driverInitialPos.longitude: posError.longitude);
+    Geofire.setLocation(
+        currentFirebaseUser.uid,
+        driverInitialPos != null
+            ? driverInitialPos.latitude
+            : posError.latitude,
+        driverInitialPos != null
+            ? driverInitialPos.longitude
+            : posError.longitude);
     print("Location set");
 
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/newtrip');
+        .child('drivers/${currentFirebaseUser.uid}/profile/newtrip');
     tripRequestRef.set('waiting');
 
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/onlineStatus');
+        .child('drivers/${currentFirebaseUser.uid}/profile/onlineStatus');
     tripRequestRef.set('online');
-
 
     tripRequestRef.onValue.listen((event) {
       print('tripRequestRef.onValue.listen-> ${event}');
@@ -526,10 +612,12 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   /*
   * This responsible to go online for the driver. with help of geofire
   * */
-  void GoOffline()  async{
+  void GoOffline() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-      showAlertGlobal(context, "No internet Connection", 'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+    if (connectivityResult != ConnectivityResult.mobile &&
+        connectivityResult != ConnectivityResult.wifi) {
+      showAlertGlobal(context, "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
       return;
     }
     isOnline = false;
@@ -538,11 +626,11 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     Geofire.removeLocation(currentFirebaseUser.uid);
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/newtrip');
+        .child('drivers/${currentFirebaseUser.uid}/profile/newtrip');
 
     tripRequestRef = FirebaseDatabase.instance
         .reference()
-        .child('drivers/${currentFirebaseUser.uid}/onlineStatus');
+        .child('drivers/${currentFirebaseUser.uid}/profile/onlineStatus');
     tripRequestRef.set('offline');
     setState(() {
       cancelLocationUpdate = true;
@@ -551,8 +639,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     //tripRequestRef.set('offline');
     tripRequestRef.onDisconnect();
   }
-
-
 
   /*
   * When our drivers go place to place this steam subs are updating the locations
@@ -563,11 +649,14 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   * */
 
   void getLocationUpdates() {
-    print(" getLocationUpdates Status Update canc elLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
-    homeTabPositionStream = Geolocator
-        .getPositionStream(desiredAccuracy: LocationAccuracy.bestForNavigation,distanceFilter: 2)
+    print(
+        " getLocationUpdates Status Update canc elLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
+    homeTabPositionStream = Geolocator.getPositionStream(
+            desiredAccuracy: LocationAccuracy.bestForNavigation,
+            distanceFilter: 2)
         .listen((Position position) {
-      print(" getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
+      print(
+          " getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
 
       currentPosition = position;
       if (isAvailable) {
@@ -577,14 +666,132 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         Geofire.setLocation(
             currentFirebaseUser.uid, position.latitude, position.longitude);
       }
-      if(cancelLocationUpdate){
+      if (cancelLocationUpdate) {
         homeTabPositionStream?.cancel();
-      }else{
-          print("Inside Move Camara Position..............");
-          LatLng pos = LatLng(position.latitude, position.longitude);
-          mapController.animateCamera(CameraUpdate.newLatLng(pos));
+      } else {
+        print("Inside Move Camara Position..............");
+        LatLng pos = LatLng(position.latitude, position.longitude);
+        mapController.animateCamera(CameraUpdate.newLatLng(pos));
       }
     });
+  }
+
+  void showAlertBookTrip(BuildContext context, String title) {
+    showDialog(
+        useSafeArea: true,
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) => AlertDialog(
+              title: Center(
+                  child: Column(
+                children: <Widget>[
+                  Icon(
+                    Icons.supervised_user_circle_rounded,
+                    color: Color(0xFFff6f00),
+                    size: 60,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    title,
+                    style: GoogleFonts.roboto(
+                        fontSize: 20, color: Color(0xFFff6f00)),
+                  ),
+                ],
+              )),
+              contentPadding: EdgeInsets.all(10.0),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //position
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            top: 20, bottom: 20, left: 5, right: 5),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {},
+                                  child: Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          height: 50,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular((25))),
+                                            border: Border.all(
+                                                width: 3.0,
+                                                color: Color(0xFFef6c00)),
+                                          ),
+                                          child: Icon(Icons.call,
+                                              color: Color(0xFFef6c00)),
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text(
+                                          'Voice Cut',
+                                          style: GoogleFonts.roboto(
+                                              color: Color(0xFFef6c00)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {},
+                                  child: Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          height: 50,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular((25))),
+                                            border: Border.all(
+                                                width: 3.0,
+                                                color: Color(0xFFef6c00)),
+                                          ),
+                                          child: Icon(Icons.list,
+                                              color: Color(0xFFef6c00)),
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text('Browse Trips',
+                                            style: GoogleFonts.roboto(
+                                                color: Color(0xFFef6c00))),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ));
   }
 
   @override
