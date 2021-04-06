@@ -32,13 +32,14 @@ class _AccountDetailsState extends State<AccountDetails> {
                         children: <Widget>[
                           SizedBox(
                             width: 10,
+
                           ),
                           GestureDetector(
                               onTap: () {
                                 Navigator.pop(context);
                               },
-                              child: Expanded(child: Icon(
-                                  Icons.arrow_back, color: Color(0xFFffffff)))
+                              child: Icon(
+                                  Icons.arrow_back, color: Color(0xFFffffff))
                           ),
                           SizedBox(
                             width: 15,

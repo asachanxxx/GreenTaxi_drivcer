@@ -16,6 +16,7 @@ import 'package:greentaxi_driver/models/tripdetails.dart';
 import 'package:greentaxi_driver/models/vehicleinfo.dart';
 import 'package:greentaxi_driver/screens/misc/requesttrip.dart';
 import 'package:greentaxi_driver/screens/newtripspage.dart';
+import 'package:greentaxi_driver/shared/repository/firebase_service.dart';
 import 'package:greentaxi_driver/shared/repository/sales_service.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/AvailabilityButton.dart';
@@ -56,7 +57,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   // }
 
   void getCurrentPosition() async {
-    print("Inside getCurrentPosition");
+    logger.d("Inside getCurrentPosition");
     try {
       Position position = await HelperMethods.determinePositionRaw();
       // setState(() {
@@ -65,47 +66,51 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
       driverInitialPos = pos;
       // });
     } catch (e) {
-      print('Error: ${e.toString()}');
+      logger.e('Error: ${e.toString()}');
     }
   }
 
   void getCurrentDriverInfo() async {
+    FirebaseService.logtoFirebaseInfo("HomeTab- getCurrentDriverInfo ","Inside the Method");
     currentFirebaseUser = FirebaseAuth.instance.currentUser;
     DatabaseReference driverRef = FirebaseDatabase.instance
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/profile');
 
     driverRef.once().then((DataSnapshot snapshot) {
+      FirebaseService.logtoFirebaseInfo("HomeTab- getCurrentDriverInfo ","isOnlineStatus =   ${snapshot.value["onlineStatus"]}");
+
       if (snapshot.value != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
-        print("Came");
-        print(currentDriverInfo.fullName);
-        print(
+        logger.d(
             "onlineStatus : ${snapshot.value["onlineStatus"] != null ? snapshot.value["onlineStatus"] : ""}");
 
         if (snapshot.value["onlineStatus"] != null &&
             snapshot.value["onlineStatus"] == "online") {
+          logger.d("Inside getCurrentDriverInfo isOnlineStatus = true");
+          FirebaseService.logtoFirebaseInfo("HomeTab- getCurrentDriverInfo ","Set isOnlineStatus =  True");
           isOnlineStatus = true;
         }
         if (snapshot.value["earnings"] != null) {
-          print("earnings ${snapshot.value["earnings"].toString()}");
+          logger.d("earnings ${snapshot.value["earnings"].toString()}");
           earnings = double.tryParse(snapshot.value["earnings"].toString());
         }
 
         if (snapshot.value["inMiddleOfTrip"] != null) {
-          print(
+          logger.d(
               "inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
           inMiddleOfTrip =
               snapshot.value["inMiddleOfTrip"].toString().toLowerCase() ==
                   'true';
         }
         if (snapshot.value["rideId"] != null) {
-          print("existingRideId  ${snapshot.value["rideId"].toString()}");
+          logger.d("existingRideId  ${snapshot.value["rideId"].toString()}");
           existingRideId = snapshot.value["rideId"];
         }
         if (inMiddleOfTrip) {
           restartRide();
         }
+        availabilityButtonPress();
       }
     });
 
@@ -115,17 +120,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
         .once();
 
     currentVehicleInfomation = VehicleInfomation.fromShapShot(vehicleRef);
-
-    // vehicleRef.once().then((DataSnapshot snapshot) {
-    //   if (snapshot.value != null) {
-    //     currentVehicleInfomation = VehicleInfomation.fromShapShot(snapshot);
-    //   }
-    // });
-
-
-    print("Vehicle type :- ${currentVehicleInfomation.vehicleType}");
-    print("Vehicle type VtypeConverter :- ${VtypeConverter(currentVehicleInfomation.vehicleType)}");
-
+    //logger.d("Vehicle type :- ${currentVehicleInfomation.vehicleType}");
+    logger.d(
+        "Vehicle type VtypeConverter :- ${VtypeConverter(currentVehicleInfomation.vehicleType)}");
 
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context, driverInitialPos);
@@ -146,38 +143,54 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   }
 
   void availabilityButtonPress() async {
-    //check network availability
+    FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","Start of the method");
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
-      showAlertGlobal(context, "No internet Connection",
-          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      showAlertGlobal(
+          context,
+          "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+          Icons.signal_wifi_off);
       return;
     }
 
-    print("availabilityButtonPress->isOnlineStatus123  $isOnlineStatus");
+    FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","isOnlineStatus =   $isOnlineStatus");
+    logger.d("availabilityButtonPress->isOnlineStatus123  $isOnlineStatus");
     if (isOnlineStatus) {
-      print("availabilityButtonPress() point 0");
+      FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","availabilityButtonPress() point 0");
+      logger.d("availabilityButtonPress() point 0");
+
       GoOnline();
-      print("availabilityButtonPress() point 1");
+
+      logger.d("availabilityButtonPress() point 1");
+      FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","availabilityButtonPress() point 1");
+
       getLocationUpdates();
-      print("availabilityButtonPress() point 2");
+
+      logger.d("availabilityButtonPress() point 2");
+      FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","availabilityButtonPress() point 2");
+
+
       setState(() {
         availabilityColor = Colors.greenAccent;
         availabilityTitle = 'GO OFFLINE';
         isAvailable = true;
       });
+
+      FirebaseService.logtoFirebaseInfo("HomeTab- availabilityButtonPress ","End Of the method");
+
+
     }
   }
 
   void checkAvailablity(context, String rideID) {
+    print("checkAvailablity rideID $rideID");
     DatabaseReference rideRef =
         FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
     rideRef.once().then((DataSnapshot snapshot) {
       // Navigator.pop(context);
-      print(
-          "availabilityButtonPress snapshot ========================================================================================> $snapshot");
-      if (snapshot.value != null) {
+        if (snapshot.value != null) {
         double pickupLat =
             double.parse(snapshot.value['location']['latitude'].toString());
         double pickupLng =
@@ -232,12 +245,16 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
                 restartRide: true,
               ),
             ));
+      }else{
+        var ref = FirebaseDatabase.instance.reference().child('drivers/${currentFirebaseUser.uid}/profile/inMiddleOfTrip');
+        ref.set(false);
+        Navigator.pop(context);
       }
     });
   }
 
   restartRide() async {
-    print(
+    logger.d(
         "On _checkWifi inMiddleOfTrip = $inMiddleOfTrip  existingRideId = $existingRideId");
     if (inMiddleOfTrip) {
       showAlert(context, existingRideId);
@@ -290,8 +307,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     currentTab = "Home";
     getCurrentPosition();
     getCurrentDriverInfo();
-
-    print("initState->isOnlineStatus  $isOnlineStatus");
   }
 
   @override
@@ -314,7 +329,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
 
             //getCurrentPosition();
 
-            availabilityButtonPress();
+
           },
         ),
         Container(
@@ -331,6 +346,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           child: GestureDetector(
             onTap: () async {
               //showAlertBookTrip(context,"Book a trip for customer");
+
+              FirebaseService.logtoFirebase(currentFirebaseUser.uid , "Home Tab- Book A trip","Info", "Testing the Method");
+
               var respons = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -384,8 +402,11 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
                           await Connectivity().checkConnectivity();
                       if (connectivityResult != ConnectivityResult.mobile &&
                           connectivityResult != ConnectivityResult.wifi) {
-                        showAlertGlobal(context, "No internet Connection",
-                            'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+                        showAlertGlobal(
+                            context,
+                            "No internet Connection",
+                            'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+                            Icons.signal_wifi_off);
                         return;
                       }
 
@@ -449,45 +470,42 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
               ),
               FutureBuilder(
                   future: SalesService.getdateWiseSummary(context),
-                  builder: (BuildContext context, AsyncSnapshot snapshot){
-                        if(snapshot.hasData){
-                          return Container(
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 20, right: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  _textTodayEarnings(snapshot.data.totalEarning),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  _textTodayCommission(snapshot.data.totalCommission),
-                                ],
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData) {
+                      return Container(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 20, right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              _textTodayEarnings(snapshot.data.totalEarning),
+                              SizedBox(
+                                width: 10,
                               ),
-                            ),
-                          );
-                        }else{
-                          return Container(
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 20, right: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  _textTodayEarnings(0.00),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  _textTodayCommission(0.00),
-                                ],
+                              _textTodayCommission(
+                                  snapshot.data.totalCommission),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 20, right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              _textTodayEarnings(0.00),
+                              SizedBox(
+                                width: 10,
                               ),
-                            ),
-                          );
-                        }
-                  }
-
-              )
-
-
+                              _textTodayCommission(0.00),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                  })
             ],
           ),
         )
@@ -495,7 +513,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     );
   }
 
-  Widget _textTodayEarnings(double earning ) {
+  Widget _textTodayEarnings(double earning) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -576,14 +594,17 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
-      showAlertGlobal(context, "No internet Connection",
-          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      showAlertGlobal(
+          context,
+          "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+          Icons.signal_wifi_off);
       return;
     }
     isOnline = true;
     cancelLocationUpdate = false;
     Geofire.initialize('driversAvailable');
-    print("Geofire Started");
+    logger.d("Geofire Started");
     Geofire.setLocation(
         currentFirebaseUser.uid,
         driverInitialPos != null
@@ -605,7 +626,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     tripRequestRef.set('online');
 
     tripRequestRef.onValue.listen((event) {
-      print('tripRequestRef.onValue.listen-> ${event}');
+      logger.d('tripRequestRef.onValue.listen-> ${event}');
     });
   }
 
@@ -616,8 +637,11 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
-      showAlertGlobal(context, "No internet Connection",
-          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
+      showAlertGlobal(
+          context,
+          "No internet Connection",
+          'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+          Icons.signal_wifi_off);
       return;
     }
     isOnline = false;
@@ -635,8 +659,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     setState(() {
       cancelLocationUpdate = true;
     });
-
-    //tripRequestRef.set('offline');
     tripRequestRef.onDisconnect();
   }
 
@@ -649,19 +671,19 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   * */
 
   void getLocationUpdates() {
-    print(
-        " getLocationUpdates Status Update canc elLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
+    logger.d(
+        " getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
     homeTabPositionStream = Geolocator.getPositionStream(
             desiredAccuracy: LocationAccuracy.bestForNavigation,
             distanceFilter: 2)
         .listen((Position position) {
-      print(
+      logger.d(
           " getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
 
       currentPosition = position;
       if (isAvailable) {
         //Update the location to the firebase
-        print(
+        logger.d(
             "LocationUpdates -> ${currentFirebaseUser.uid} ON ${position.latitude.toString()} and ${position.longitude.toString()}");
         Geofire.setLocation(
             currentFirebaseUser.uid, position.latitude, position.longitude);
@@ -669,7 +691,7 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
       if (cancelLocationUpdate) {
         homeTabPositionStream?.cancel();
       } else {
-        print("Inside Move Camara Position..............");
+        logger.d("Inside Move Camara Position..............");
         LatLng pos = LatLng(position.latitude, position.longitude);
         mapController.animateCamera(CameraUpdate.newLatLng(pos));
       }

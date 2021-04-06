@@ -149,7 +149,7 @@ class _ProfileTabState extends State<ProfileTab> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                  "${currentDriverInfo != null ? "Driver Name" : "Taxy Driver"} ",
+                                  "${currentDriverInfo != null ? currentDriverInfo.fullName : "Go2Go Driver"} ",
                                   style: GoogleFonts.roboto(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
@@ -158,7 +158,16 @@ class _ProfileTabState extends State<ProfileTab> {
                                 height: 5,
                               ),
                               Text(
-                                  "E-mail: ${currentFirebaseUser.email != null ? currentFirebaseUser.email : ""}  Phone: ${currentFirebaseUser.phoneNumber != null ? "0778151151" : "0778151151"}",
+                                  "E-mail: ${currentFirebaseUser.email != null ? currentFirebaseUser.email : ""}",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 12,
+                                      color: Color(0xFFffffff),
+                                      fontWeight: FontWeight.bold)),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                  "Phone: ${currentFirebaseUser.phoneNumber != null ? "0778151151" : "0778151151"}",
                                   style: GoogleFonts.roboto(
                                       fontSize: 12,
                                       color: Color(0xFFffffff),
@@ -261,6 +270,17 @@ class _ProfileTabState extends State<ProfileTab> {
                             "view or edit the details of your vehicle         ")),
                     GestureDetector(
                         onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => VehicleDetails()),
+                          );
+                        },
+                        child: menuColumn(
+                            Icons.star,
+                            "Rating Details",
+                            "view your ratings          ")),
+                    GestureDetector(
+                        onTap: () {
                           UserRepository.signOut();
                           Navigator.pushNamedAndRemoveUntil(
                               context, LoginPage.Id, (route) => false);
@@ -294,7 +314,7 @@ class _ProfileTabState extends State<ProfileTab> {
             Icon(
               iconData,
               color: Color(0xFFe65100),
-              size: 40.0,
+              size: 30.0,
               semanticLabel: 'Text to announce in accessibility modes',
             ),
             SizedBox(

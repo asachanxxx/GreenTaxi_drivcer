@@ -77,7 +77,7 @@ class _CustomerTabState extends State<CustomerTab> {
 
   @override
   void initState() {
-    print("initStatexxxx");
+    print("Init Driver Details  ${currentDriverInfo.SCR} ODR = ${currentDriverInfo.ODR}");
     super.initState();
   }
 
@@ -456,4 +456,5 @@ class _CustomerTabState extends State<CustomerTab> {
               ),
             ));
   }
+
 }

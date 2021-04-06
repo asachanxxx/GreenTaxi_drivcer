@@ -9,6 +9,7 @@ import 'package:greentaxi_driver/helpers/requestHelper.dart';
 import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/predictions.dart';
 import 'package:greentaxi_driver/models/searchmodels.dart';
+import 'package:greentaxi_driver/screens/misc/selectlocationonmap.dart';
 import 'package:greentaxi_driver/shared/repository/firebase_service.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/BrandDivider.dart';
@@ -311,7 +312,37 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  _buildDropTF()
+                  Row(
+                    children:<Widget> [
+                      Expanded(child: _buildDropTF()),
+                      SizedBox(width: 6,),
+                      ButtonTheme(
+                        minWidth: 30,
+                        height: 30.0,
+                        child: RaisedButton(
+                          color: Color(0xfff57f17),
+                          textColor: Colors.white,
+                          shape: new RoundedRectangleBorder(
+                              borderRadius: new BorderRadius.circular(15)
+                          ),
+                          child: Container(height: 18, child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Icon(Icons.location_on_outlined,size: 20,),
+                              Text("Point on Map", style: GoogleFonts.roboto(fontSize: 15 , fontWeight: FontWeight.bold),),
+                            ],
+                          )),
+                          onPressed: (){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => SelectLocationOnMap(isPickUpSearch: widget.isPickUpSearch,)),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),

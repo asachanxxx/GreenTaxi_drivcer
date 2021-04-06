@@ -505,6 +505,17 @@ class TripTile3 extends StatelessWidget {
                     ],
                   ),
                 ),
+                FloatingActionButton(
+                  heroTag: "btn2",
+                  onPressed: () {
+
+
+                  },
+                  child:Icon(Icons.play_arrow) ,
+                  backgroundColor:true ? Color(0xFFff6f00): Color(0xFF616161),
+                ),
+                SizedBox(width: 20,),
+
                 Icon(Icons.arrow_forward_ios_outlined, size: 15 , color: BrandColors.colorDimText,)
               ],
             ),

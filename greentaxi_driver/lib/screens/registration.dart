@@ -120,6 +120,8 @@ class _CustomRegiterState extends State<RiderRegister> {
           'pass': passwordcontoller.text,
           'nic': nicontoller.text,
           'accountStatus': "NoVehicleDet",
+          'SCR': 10.0,
+          'ODR': 5.0,
           'datetime': DateTime.now().toString()
         };
         newuser.set(usermap);

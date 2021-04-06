@@ -11,6 +11,7 @@ import 'package:greentaxi_driver/screens/login.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/screens/misc/customertrips.dart';
 import 'package:greentaxi_driver/screens/misc/requesttrip.dart';
+import 'package:greentaxi_driver/screens/misc/selectlocationonmap.dart';
 import 'package:greentaxi_driver/screens/newtripspage.dart';
 import 'package:greentaxi_driver/screens/phoneverify.dart';
 import 'package:greentaxi_driver/screens/registration.dart';
@@ -51,27 +52,20 @@ void main() async {
             ),
     );
   } catch (e) {
-    print(
+    logger.e(
         "Firebase Error==========================================> ${e.toString()}");
   }
 
-  print("After Firebase initialization ..........");
-
-  ///Assign the default firbase user
   currentFirebaseUser = FirebaseAuth.instance.currentUser;
 
-  print("After Firebase initialization 1..........");
-
-  print(
-      "loadTaxySystem Point 1==========================================> $currentFirebaseUser");
   if (currentFirebaseUser != null) {
     try {
       ///we need to check if the current FirebaseAuth.instance.currentUser
       /// is on the drivers node. if node we have to direct to register
       var hasAssociateDriverAccount = await CompanyRepository()
           .getCheckUidHasDriverAccount(currentFirebaseUser.uid);
-      print(
-          "loadTaxySystem hasAssociateDriverAccount==========================================> $hasAssociateDriverAccount");
+      logger.i(
+          "main Method hasAssociateDriverAccount==========================================> $hasAssociateDriverAccount");
       if (hasAssociateDriverAccount != null) {
         ///Get the status
         var accStatus = hasAssociateDriverAccount["accountStatus"];
@@ -95,8 +89,7 @@ void main() async {
         dRoute = 'login';
       }
     }catch (e) {
-      print(
-          "Firebase Error==========================================> ${e.toString()}");
+      logger.e("Firebase Error on main==========================================> ${e.toString()}");
       dRoute = "login";
     }
 
@@ -136,22 +129,16 @@ class _MyAppState extends State<MyApp> {
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
 
-  // //check network availability
-  // var connectivityResult = await Connectivity().checkConnectivity();
-  // if(connectivityResult != ConnectivityResult.mobile && connectivityResult != ConnectivityResult.wifi){
-  // showSnackBar('No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
-  // return;
-  // }
-
   @override
   initState() {
-    print("Came to the initState");
+    logger.d("Came to the initState");
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("dRoute =============> $dRoute");
+    logger.d("dRoute =============> $dRoute");
+
     /*
     * App widget tree building here.
     * Added only the route configs. not changes need to be done unless there is a extreme need
@@ -161,7 +148,7 @@ class _MyAppState extends State<MyApp> {
       child: LifeCycleManager(
         child: MaterialApp(
           key: scaffoldKey,
-          title: 'Flutter Demo',
+          title: 'Go2Go Driver',
           theme: ThemeData(
             textTheme: GoogleFonts.robotoMonoTextTheme(
               Theme.of(context).textTheme,
@@ -190,7 +177,7 @@ class _MyAppState extends State<MyApp> {
             UserStatusScreenPending.Id: (context) => UserStatusScreenPending(),
             CustomerTrips.Id: (context) => CustomerTrips(),
             SimpleRecorder.Id: (context) => SimpleRecorder(),
-
+            SelectLocationOnMap.Id: (context) => SelectLocationOnMap(),
           },
         ),
       ),

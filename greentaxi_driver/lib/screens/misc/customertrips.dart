@@ -144,12 +144,12 @@ class _CustomerTripsState extends State<CustomerTrips> {
                       newwidget = ListView.builder(
                         itemCount: list.length, //snapshot.data.length,
                         itemBuilder: (BuildContext context, int index) {
-                          Address pickup = Address(placeId: list[index]["destinDetails"]["placeId"],
+                          Address dropadd  = Address(placeId: list[index]["destinDetails"]["placeId"],
                                            latitude: list[index]["destinDetails"]["latitude"],
                                            logitude:  list[index]["destinDetails"]["logitude"],
                                            placeName: list[index]["destinDetails"]["placeName"] ,
                                            placeFormatAddress: list[index]["destinDetails"]["placeFormatAddress"]);
-                          Address dropadd = Address(placeId: list[index]["pickupDetails"]["placeId"],
+                          Address pickup = Address(placeId: list[index]["pickupDetails"]["placeId"],
                               latitude: list[index]["pickupDetails"]["latitude"],
                               logitude:  list[index]["pickupDetails"]["logitude"],
                               placeName: list[index]["pickupDetails"]["placeName"] ,
@@ -157,11 +157,11 @@ class _CustomerTripsState extends State<CustomerTrips> {
 
                           print("list[index][phoneNumber]  ${dropadd.placeFormatAddress}");
 
-                          Customer cus = Customer(
-                              phoneNumber: "",
-                              fullName: "",
-                              driverID: "",
-                              CustomerID: "");
+                          // Customer cus = Customer(
+                          //     phoneNumber: "",
+                          //     fullName: "",
+                          //     driverID: "",
+                          //     CustomerID: "");
                           return TripTile2(
                               pickupAdd: pickup,
                               dropAdd:dropadd ,
@@ -225,7 +225,7 @@ class _CustomerTripsState extends State<CustomerTrips> {
                           onTap: () {
                             Navigator.pop(context);
                           },
-                          child: Expanded(child: Icon(Icons.arrow_back, color: Color(0xFFffffff)))
+                          child: Icon(Icons.arrow_back, color: Color(0xFFffffff))
                       ),
                       SizedBox(width: 60,),
                       Expanded(

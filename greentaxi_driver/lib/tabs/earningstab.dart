@@ -194,9 +194,10 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                                   color:Color(0xFFff6f00),
                                   fontSize: 14,
                                   onPress: () async {
-                                    var now = DateTime.now();
-                                    var summary = DateWiseSummary(10,20,30,40,50,60,70);
-                                    await SalesService.updatedateWiseSummary(summary);
+                                    // var now = DateTime.now();
+                                    // var summary = DateWiseSummary(10,20,30,40,50,60,70);
+                                    // await SalesService.updatedateWiseSummary(summary);
+                                    showAlertGlobal(context,"Payment Summary" , "Payment Summary will be available soon(ගෙවීම් සාරාංශය ළඟදීම ලබා ගත හැකිය)" ,Icons.construction);
                                   },
                                 ),
                                 TaxiButtonSmallWithSize(
@@ -204,8 +205,9 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                                   color:Color(0xFFff6f00),
                                   fontSize: 14,
                                   onPress: () async {
-                                    var summary = CashFlows(10,20);
-                                    await SalesService.updateCashFlows(summary);
+                                    // var summary = CashFlows(10,20);
+                                    // await SalesService.updateCashFlows(summary);
+                                    showAlertGlobal(context,"Monthly Summary" , "Monthly Summary will be available soon(මාසික සාරාංශය ළඟදීම ලබා ගත හැකිය)",Icons.construction );
                                   },
                                 ),
                                 TaxiButtonSmallWithSize(
@@ -213,9 +215,9 @@ class _EarningsTabState extends State<EarningsTab>  with TickerProviderStateMixi
                                   color:Color(0xFFff6f00),
                                   fontSize: 14,
                                   onPress: () async {
-                                    var val = 99.8965458;
-                                    print(double.parse(val.toStringAsFixed(2)));
-
+                                    // var val = 99.8965458;
+                                    // print(double.parse(val.toStringAsFixed(2)));
+                                    showAlertGlobal(context,"Total Summary" , "Total Summary will be available soon(සම්පූර්ණ සාරාංශය ළඟදීම ලබා ගත හැකිය)" ,Icons.construction);
                                   },
                                 ),
 

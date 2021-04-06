@@ -214,6 +214,8 @@ Widget build(BuildContext context) {
     stream: FirebaseDatabase.instance
         .reference()
         .child('listTree/requestListVoice/')
+        .orderByChild('requestedDriverId')
+        .equalTo(currentFirebaseUser.uid)
         .onValue,
     builder: (BuildContext context, AsyncSnapshot snapshot) {
       Widget newwidget;
@@ -362,44 +364,44 @@ Widget build(BuildContext context) {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children:<Widget> [
-                FloatingActionButton(
-                  heroTag: "btn1",
-                  onPressed: () {
-                    if (!_mRecorderIsInited || !_mPlayer.isStopped) {
+                  FloatingActionButton(
+                    heroTag: "btn1",
+                    onPressed: () {
+                      if (!_mRecorderIsInited || !_mPlayer.isStopped) {
 
-                    } else {
-                      if (_mRecorder.isStopped) {
-                        record();
                       } else {
-                        stopRecorder().then((value) => setState(() {}));
+                        if (_mRecorder.isStopped) {
+                          record();
+                        } else {
+                          stopRecorder().then((value) => setState(() {}));
+                        }
                       }
-                    }
-                    //Text(_mRecorder.isRecording ? 'Stop' : 'Record'),
+                      //Text(_mRecorder.isRecording ? 'Stop' : 'Record'),
 
-                  },
-                  child:_mRecorder.isRecording? Icon(Icons.pause): Icon(Icons.mic),
-                  backgroundColor: Color(0xFFff6f00),
-                ),
-                SizedBox(width: 20,),
-                FloatingActionButton(
-                  heroTag: "btn2",
-                  onPressed: () {
-                    if (!_mPlayerIsInited || !_mplaybackReady ||
-                        !_mRecorder.isStopped) {
+                    },
+                    child:_mRecorder.isRecording? Icon(Icons.pause): Icon(Icons.mic),
+                    backgroundColor: Color(0xFFff6f00),
+                  ),
+                  SizedBox(width: 20,),
+                  FloatingActionButton(
+                    heroTag: "btn2",
+                    onPressed: () {
+                      if (!_mPlayerIsInited || !_mplaybackReady ||
+                          !_mRecorder.isStopped) {
 
-                    } else {
-                      if (_mPlayer.isStopped) {
-                        play();
                       } else {
-                        stopPlayer().then((value) => setState(() {}));
+                        if (_mPlayer.isStopped) {
+                          play();
+                        } else {
+                          stopPlayer().then((value) => setState(() {}));
+                        }
                       }
-                    }
 
-                  },
-                  child:_mPlayer.isPlaying ? Icon(Icons.stop) :Icon(Icons.play_arrow),
-                  backgroundColor:_mPlayer.isPlaying ? Color(0xFFff6f00): Color(0xFF616161),
-                ),
-                SizedBox(width: 20,),
+                    },
+                    child:_mPlayer.isPlaying ? Icon(Icons.stop) :Icon(Icons.play_arrow),
+                    backgroundColor:_mPlayer.isPlaying ? Color(0xFFff6f00): Color(0xFF616161),
+                  ),
+                  SizedBox(width: 20,),
                 FloatingActionButton(
                   heroTag: "btn3",
                   onPressed: () {
@@ -456,6 +458,8 @@ Widget build(BuildContext context) {
         'key':listUsers.key,
         'requestedDriverId': currentFirebaseUser.uid,
         'requestedDriver': currentDriverInfo.fullName,
+        'attended': false,
+        'completed': false,
         'time': DateTime.now().toString(),
       };
 

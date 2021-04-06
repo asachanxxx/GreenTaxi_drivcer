@@ -102,7 +102,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   Widget build(BuildContext context) {
     return new Scaffold(
         key: scaffoldKey,
-        resizeToAvoidBottomPadding: false,
+        //resizeToAvoidBottomPadding: false,
         body: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <
             Widget>[
           Container(

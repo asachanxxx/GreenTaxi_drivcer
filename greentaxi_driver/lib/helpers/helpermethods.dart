@@ -214,16 +214,16 @@ class HelperMethods {
       double SCR = double.minPositive;
       double ODR = double.minPositive;
 
-      if(systemSettings == null || systemSettings.SCR == null ){
+      if(currentDriverInfo == null || currentDriverInfo.SCR == null ){
         SCR = ((distanceFire +timeFire) * 10)/100;
       }else {
-        SCR = ((distanceFire + timeFire) * systemSettings.SCR) / 100;
+        SCR = ((distanceFire + timeFire) * currentDriverInfo.SCR) / 100;
       }
 
-      if(systemSettings == null || systemSettings.ODR == null ){
+      if(currentDriverInfo == null || currentDriverInfo.ODR == null ){
         ODR = ((distanceFire +timeFire) * 5)/100;
       }else {
-        ODR = ((distanceFire + timeFire) * systemSettings.ODR) / 100;
+        ODR = ((distanceFire + timeFire) * currentDriverInfo.ODR) / 100;
       }
 
       paymentDetails.companyPayable = SCR;

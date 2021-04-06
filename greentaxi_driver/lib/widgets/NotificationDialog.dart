@@ -133,8 +133,9 @@ class NotificationDialog extends StatelessWidget {
                         title: 'ACCEPT',
                         color: BrandColors.colorGreen,
                         onPress: () async {
-                          assetsAudioPlayer.stop();
-                          checkAvailablity(context);
+
+                         await assetsAudioPlayer.stop();
+                         checkAvailablity(context);
                         },
                       ),
                     ),
@@ -164,6 +165,7 @@ class NotificationDialog extends StatelessWidget {
     DatabaseReference newRideRef = FirebaseDatabase.instance
         .reference()
         .child('drivers/${currentFirebaseUser.uid}/profile/newtrip');
+
     newRideRef.once().then((DataSnapshot snapshot) {
       Navigator.pop(context);
       Navigator.pop(context);
@@ -179,6 +181,21 @@ class NotificationDialog extends StatelessWidget {
       if (thisRideID == tripDetails.rideID) {
         newRideRef.set('accepted');
 
+        DatabaseReference newRideRefRideID = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${currentFirebaseUser.uid}/profile/rideId');
+        newRideRefRideID.set(tripDetails.rideID.trim());
+
+        rideRef = FirebaseDatabase.instance
+            .reference()
+            .child('drivers/${currentDriverInfo.id}/profile');
+        rideRef.child("inMiddleOfTrip").set("true");
+
+        DatabaseReference newRideRefRide = FirebaseDatabase.instance
+            .reference()
+            .child('rideRequest/${tripDetails.rideID.trim()}/status');
+        newRideRefRide.set('accepted');
+        tripDetails.status = 'accepted';
         ///This will remove the incoming data stream to him cus he is on a trip
         HelperMethods.disableHomTabLocationUpdates();
         Navigator.push(

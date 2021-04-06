@@ -13,13 +13,25 @@ import 'package:greentaxi_driver/models/paymenthistory.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
 import 'package:greentaxi_driver/models/vehicleinfo.dart';
 import 'package:greentaxi_driver/models/vtype.dart';
+import 'package:logger/logger.dart';
 
 String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
+
+final String geoCodeUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+
 
 final CameraPosition googlePlex = CameraPosition(
   target: LatLng(6.885173, 80.015352),
   zoom: 14.4746,
 );
+
+var logger = Logger(printer: PrettyPrinter(
+  methodCount: 0,
+  errorMethodCount: 3,
+  lineLength: 50,
+  colors: true,
+  printEmojis: true
+));
 
 final String operatingCountry = 'LK';
 
@@ -31,7 +43,7 @@ StreamSubscription<Position> ridePositionStream;
 
 Position currentPosition;
 
-final assetsAudioPlayer = AssetsAudioPlayer();
+var assetsAudioPlayer = AssetsAudioPlayer.withId("0");
 
 DatabaseReference rideRef;
 
@@ -65,7 +77,7 @@ String userProfilePath = "images/drivers/profilePics";
 String userDocumentPath = "images/drivers/docpath";
 String userAudioPath = "audio/rideRequest";
 
-void showAlertGlobal(BuildContext context, String title, String content) {
+void showAlertGlobal(BuildContext context, String title, String content, IconData iconData) {
   showDialog(
       context: context,
       barrierDismissible: true,
@@ -74,7 +86,7 @@ void showAlertGlobal(BuildContext context, String title, String content) {
                 child: Column(
               children: <Widget>[
                 Icon(
-                  Icons.signal_wifi_off,
+                  iconData,
                   color: Color(0xFFff6f00),
                   size: 80,
                 ),
@@ -152,6 +164,8 @@ String VtypeConverter(String Vtype) {
   return GlobalVtype;
 }
 
-double roundUp(double val){
+double roundUp(double val) {
   return double.parse(val.toStringAsFixed(2));
 }
+
+bool fireBaseLogEnable = true;

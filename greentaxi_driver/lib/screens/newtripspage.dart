@@ -61,10 +61,11 @@ class _NewTripPageState extends State<NewTripPage> {
   String DistanceString = '0';
   bool isRequestingDirection = false;
   String buttonTitle = 'Drive to Customer';
-  Color buttonColor = BrandColors.colorGreen;
+  Color buttonColor = Color(0xFFff7043);
   Timer timer;
   int durationCounter = 0;
   var timeBaseDistance = 0.0;
+  String TimeSpent = "0:0";
 
   double cumDistance = 0;
   double cumDistanceGro = 0;
@@ -269,7 +270,7 @@ class _NewTripPageState extends State<NewTripPage> {
               ),
               height: Platform.isIOS ? 280 : 300,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -277,242 +278,251 @@ class _NewTripPageState extends State<NewTripPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          "${widget.tripDetails.riderName}",
+                          "${widget.tripDetails.riderName.toUpperCase()}",
                           style: GoogleFonts.roboto(
                               fontSize: 20,
                               color: Color(0xFFe65100),
                               fontWeight: FontWeight.bold),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            launch("tel://${widget.tripDetails.riderPhone}");
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 10),
-                            child: Icon(Icons.call),
-                          ),
-                        ),
+
                       ],
-                    ),
-                    SizedBox(
-                      height: 2,
                     ),
                     Text(
                       "${widget.tripDetails.riderPhone}",
-                      style: GoogleFonts.roboto(fontSize: 15),
+                      style: GoogleFonts.roboto(fontSize: 15,color: Color(0xAAe65100)),
                     ),
                     SizedBox(
-                      height: 5,
+                      height: 10,
                     ),
+                    BrandDivider(),
                     SizedBox(
                       height: 10,
                     ),
                     Row(
                       children: <Widget>[
-                        SizedBox(
-                          width: 2,
-                        ),
-                        Image.asset(
-                          'images/pickicon.png',
-                          height: 16,
-                          width: 16,
-                        ),
-                        SizedBox(
-                          width: 18,
-                        ),
-                        Expanded(
-                          child: Container(
-                            child: Text(
-                              widget.tripDetails.pickupAddress,
-                              style: GoogleFonts.roboto(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+                        Column(
+                          children: <Widget>[
+                            Icon(
+                              Icons.circle,
+                              color: Color(0xfff57f17),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Image.asset(
-                          'images/desticon.png',
-                          height: 20,
-                          width: 20,
-                        ),
-                        SizedBox(
-                          width: 18,
-                        ),
-                        Expanded(
-                          child: Container(
-                            child: Text(
-                              widget.tripDetails.destinationAddress,
-                              style: GoogleFonts.roboto(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+                            SizedBox(
+                              height: 7,
                             ),
-                          ),
+                            Icon(
+                              Icons.circle,
+                              color: Color(0xff0277bd),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              '${widget.tripDetails.pickupAddress}',
+                              style: GoogleFonts.roboto(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Color(0xFF00001f)),
+                            ),
+                            new SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              '${widget.tripDetails.destinationAddress}',
+                              style: GoogleFonts.roboto(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Color(0xFF00001f)),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                     SizedBox(
-                      height: 15,
-                    ),
-                    BrandDivider(),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          "DAT: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '${distancex != null ? distancex + "KM" : ""}',
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          "DCU: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '${cumDistance != null ? cumDistance.toStringAsFixed(2) + " KM" : ""}',
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          "GCU: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '${cumDistanceGro != null ? cumDistanceGro.toStringAsFixed(2) + " KM" : ""}',
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
-                        ),
-                        //DistanceString
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          "TIME: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '${TimeSpent != null ? TimeSpent : ""}',
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Text(
-                          "ACC: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '${accuracyx != null ? accuracyx : ""}',
-                          style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                      height: 10,
                     ),
                     SizedBox(
                       height: 5,
                     ),
                     BrandDivider(),
                     SizedBox(
-                      height: 5,
+                      height: 10,
                     ),
                     Row(
                       children: <Widget>[
-                        Text(
-                          "Duration: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          '$durationString',
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              launch("tel://${widget.tripDetails.riderPhone}");
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular((25))),
+                                    border: Border.all(
+                                        width: 2.0, color: Color(0xFFef6c00)),
+                                  ),
+                                  child: Icon(Icons.call,
+                                      color: Color(0xFFef6c00)),
+                                ),
+                                Text(
+                                  "Call",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      color: Color(0xFFef6c00),
+                                      fontWeight: FontWeight.normal),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         SizedBox(
                           width: 10,
                         ),
-                        Text(
-                          "Distance: ",
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.normal),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              if(status == 'init' || status == 'init'){
+                                var driverLocation = LatLng(currentPosition.latitude,
+                                    currentPosition.longitude);
+                                _launchMapsUrl(
+                                    driverLocation, widget.tripDetails.pickup);
+                              }
+                              if(status == 'arrived' || status == 'ontrip'){
+                                _launchMapsUrl(widget.tripDetails.pickup,
+                                    widget.tripDetails.destination);
+                              }
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular((25))),
+                                    border: Border.all(
+                                        width: 2.0, color: Color(0xFFef6c00)),
+                                  ),
+                                  child: Icon(Icons.navigation_outlined,
+                                      color: Color(0xFFef6c00)),
+                                ),
+                                Text(
+                                  "Navigation",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      color: Color(0xFFef6c00),
+                                      fontWeight: FontWeight.normal),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        Text(
-                          '$DistanceString',
-                          style: GoogleFonts.roboto(
-                              fontSize: 15,
-                              color: Color(0xFF3e2723),
-                              fontWeight: FontWeight.bold),
+                        SizedBox(
+                          width: 10,
                         ),
-                        //DistanceString
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              launch("tel://${widget.tripDetails.riderPhone}");
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular((25))),
+                                    border: Border.all(
+                                        width: 2.0, color: Color(0xFFef6c00)),
+                                  ),
+                                  child: Icon(Icons.chat,
+                                      color: Color(0xFFef6c00)),
+                                ),
+                                Text(
+                                  "Chat",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      color: Color(0xFFef6c00),
+                                      fontWeight: FontWeight.normal),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              launch("tel://${widget.tripDetails.riderPhone}");
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular((25))),
+                                    border: Border.all(
+                                        width: 2.0, color: Color(0xFFef6c00)),
+                                  ),
+                                  child: Icon(Icons.report_gmailerrorred_outlined,
+                                      color: Color(0xFFef6c00)),
+                                ),
+                                Text(
+                                  "Report",
+                                  style: GoogleFonts.roboto(
+                                      fontSize: 14,
+                                      color: Color(0xFFef6c00),
+                                      fontWeight: FontWeight.normal),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(
-                      height: 5,
+                      height: 10,
                     ),
                     BrandDivider(),
                     SizedBox(
-                      height: 5,
+                      height: 10,
                     ),
                     TaxiButton(
                       title: buttonTitle,
                       color: buttonColor,
                       onPress: () async {
+                        rideRef = FirebaseDatabase.instance
+                            .reference()
+                            .child("rideRequest/${widget.tripDetails.rideID}");
+                        print(
+                            "onPress status $status");
+
                         if (status == 'init') {
                           status = 'accepted';
                           rideRef.child('status').set(('accepted'));
 
                           setState(() {
                             buttonTitle = 'ARRIVED';
-                            buttonColor = BrandColors.colorAccentPurple;
+                            buttonColor = Color(0xFFf4511e);
                           });
                           print(
                               "LatLng pos.longitude ${currentPosition.longitude}");
@@ -522,44 +532,47 @@ class _NewTripPageState extends State<NewTripPage> {
                               currentPosition.longitude);
                           _launchMapsUrl(
                               driverLocation, widget.tripDetails.pickup);
-                        } else if (status == 'accepted') {
+                        }
+
+                        else if (status == 'accepted') {
                           status = 'arrived';
                           rideRef.child('status').set(('arrived'));
 
                           setState(() {
                             buttonTitle = 'START TRIP';
-                            buttonColor = BrandColors.colorAccentPurple;
+                            buttonColor = Color(0xFF263238);
                           });
-
-                          //Becouse this async we show a progress dialog for user to wai
                           HelperMethods.showProgressDialog(context);
-
                           await getDirection(widget.tripDetails.pickup,
                               widget.tripDetails.destination);
-
                           Navigator.pop(context);
-                        } else if (status == 'arrived') {
+                        }
+
+                        else if (status == 'arrived') {
                           _launchMapsUrl(widget.tripDetails.pickup,
                               widget.tripDetails.destination);
 
                           status = 'ontrip';
                           //Update the firebase status
                           rideRef.child('status').set('ontrip');
+                          TimeSpent = "0.00";
 
                           setState(() {
                             cumDistance = 0.0;
                             distancex = "0.00";
                             cumDistanceGro = 0.0;
-                            TimeSpent = "0.00";
                             buttonTitle = 'END TRIP';
-                            buttonColor = Colors.red[900];
+                            buttonColor = Color(0xFF263238);
                           });
 
                           //To count how many minutes spend on a trip
                           startTimer();
-                        } else if (status == 'ontrip') {
+                        }
+                        else if (status == 'ontrip') {
                           endTrip();
                         }
+
+
                       },
                     )
                   ],
@@ -583,46 +596,104 @@ class _NewTripPageState extends State<NewTripPage> {
     );
   }
 
-  void acceptTrip() {
+  void acceptTrip() async {
     print("Inside acceptTrip");
     paymentDetails = PaymentDetails();
     if (widget.tripDetails != null) {
       if (currentDriverInfo != null) {
+        print("Inside acceptTrip");
         String rideID = widget.tripDetails.rideID;
         rideRef =
             FirebaseDatabase.instance.reference().child('rideRequest/$rideID');
 
-        rideRef.child('status').set('accepted');
-        rideRef.child('driver_name').set(currentDriverInfo.fullName);
-        rideRef.child('car_details').set(
-            '${currentDriverInfo.carColor} - ${currentDriverInfo.carModel}');
+        ///Setting variables that not setted when ride request created
         rideRef.child('driver_phone').set(currentDriverInfo.phone);
-        rideRef.child('driver_id').set(currentDriverInfo.id);
 
+        ///Drivers location may change now so we update drivers current to riderequest obejct
         Map locationMap = {
           'latitude': currentPosition.latitude.toString(),
           'longitude': currentPosition.longitude.toString(),
         };
-
         rideRef.child('driver_location').set(locationMap);
 
+        //rideRef.child('status').set('accepted');
+       // rideRef.child('driver_name').set(currentDriverInfo.fullName);
+        //rideRef.child('car_details').set(
+            //${currentDriverInfo.carColor} - ${currentDriverInfo.carModel}');
+        //rideRef.child('driver_id').set(currentDriverInfo.id);
         //  need to maintain NewTrip field so we can track what is the user status at
         // 	a given time
-        rideRef = FirebaseDatabase.instance
-            .reference()
-            .child('drivers/${currentDriverInfo.id}/profile');
-        rideRef.child("rideId").set(rideID);
-
-        rideRef = FirebaseDatabase.instance
-            .reference()
-            .child('drivers/${currentDriverInfo.id}/profile');
-        rideRef.child("inMiddleOfTrip").set("true");
-
+        // rideRef = FirebaseDatabase.instance
+        //     .reference()
+        //     .child('drivers/${currentDriverInfo.id}/profile');
+        // rideRef.child("rideId").set(rideID);
         //Setting payment Details
-        paymentDetails.pickupAddress = widget.tripDetails.pickupAddress;
-        paymentDetails.destinationAddress =
-            widget.tripDetails.destinationAddress;
-        paymentDetails.rideID = widget.tripDetails.rideID;
+        // paymentDetails.pickupAddress = widget.tripDetails.pickupAddress;
+        // paymentDetails.destinationAddress =
+        //     widget.tripDetails.destinationAddress;
+        // paymentDetails.rideID = widget.tripDetails.rideID;
+
+        if (widget.restartRide) {
+          print("widget.tripDetails.status  ${widget.tripDetails.status}");
+          status = widget.tripDetails.status;
+          if (status == 'accepted') {
+            rideRef.child('status').set(('accepted'));
+            setState(() {
+              buttonTitle = 'ARRIVED';
+              buttonColor = BrandColors.colorAccentPurple;
+            });
+            print(
+                "LatLng pos.longitude ${currentPosition.longitude}");
+            print(
+                "LatLng pos.latitude ${currentPosition.latitude}");
+            var driverLocation = LatLng(currentPosition.latitude,
+                currentPosition.longitude);
+            _launchMapsUrl(
+                driverLocation, widget.tripDetails.pickup);
+          }
+          else if (status == 'arrived') {
+            _launchMapsUrl(widget.tripDetails.pickup,
+                widget.tripDetails.destination);
+
+            status = 'arrived';
+            TimeSpent = "0.00";
+
+            setState(() {
+              cumDistance = 0.0;
+              distancex = "0.00";
+              cumDistanceGro = 0.0;
+
+              buttonTitle = 'ARRIVED';
+              buttonColor = Colors.red[900];
+            });
+
+            //To count how many minutes spend on a trip
+            startTimer();
+          }
+          else if (status == 'ontrip') {
+            _launchMapsUrl(widget.tripDetails.pickup,
+                widget.tripDetails.destination);
+
+            status = 'ontrip';
+            TimeSpent = "0.00";
+
+            setState(() {
+              cumDistance = 0.0;
+              distancex = "0.00";
+              cumDistanceGro = 0.0;
+              buttonTitle = 'END TRIP';
+              buttonColor = Colors.red[900];
+            });
+
+            //To count how many minutes spend on a trip
+            startTimer();
+          }
+
+          //startTimer();
+        }
+
+
+
       } else {
         showToast(context, "ERR_DR_002");
       }
@@ -630,23 +701,9 @@ class _NewTripPageState extends State<NewTripPage> {
       showToast(context, "ERR_DR_001");
     }
 
-    if (widget.restartRide) {
-      print("widget.tripDetails.status  ${widget.tripDetails.status}");
-      status = 'ontrip';
-      setState(() {
-        buttonTitle = 'END TRIP';
-        buttonColor = Colors.red[900];
-      });
-      rideRef.child("driver_location").child('status').set('ontrip');
 
-      DatabaseReference historyRef = FirebaseDatabase.instance
-          .reference()
-          .child('drivers/${currentFirebaseUser.uid}/profile/newtrip/');
-      historyRef.set("ended");
-
-      startTimer();
-    }
   }
+
 
   void updateTripDetails() async {
     print('Inside : updateTripDetails');
@@ -800,13 +857,14 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
-  String TimeSpent = "0:0";
+
+
   void startTimer() {
     const interval = Duration(seconds: 1);
     timer = Timer.periodic(interval, (timer) {
       setState(() {
         durationCounter++;
-        TimeSpent = ReturnTimeString(durationCounter);
+        //TimeSpent = ReturnTimeString(durationCounter);
       });
     });
   }

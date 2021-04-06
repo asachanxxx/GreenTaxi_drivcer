@@ -95,17 +95,22 @@ class _TripDetailsAccState extends State<TripDetailsAcc> {
                   } else {
                     newwidget = Text("Loading......");
                   }
+                }else{
+                  newwidget = Text("Loading......");
                 }
+              }else{
+                newwidget = Text("Loading......");
               }
+            }else{
+              newwidget = Text("Loading......");
             }
           }
-
-
+          else{
+            newwidget = Text("Loading......");
+          }
           return newwidget;
         }
     );
-
-
 
     return Scaffold(
       key: scaffoldKey,
@@ -129,8 +134,8 @@ class _TripDetailsAccState extends State<TripDetailsAcc> {
                               onTap: () {
                                 Navigator.pop(context);
                               },
-                              child: Expanded(child: Icon(
-                                  Icons.arrow_back, color: Color(0xFFffffff)))
+                              child: Icon(
+                                  Icons.arrow_back, color: Color(0xFFffffff))
                           ),
                           SizedBox(
                             width: 15,

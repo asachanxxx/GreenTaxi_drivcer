@@ -1,6 +1,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/address.dart';
 import 'package:greentaxi_driver/models/searchmodels.dart';
 import 'package:greentaxi_driver/shared/repository/serial_service.dart';
@@ -162,6 +163,72 @@ class FirebaseService {
     await ref.set(fullMap);
     return Future.value(true);
   }
+
+
+
+  static void handleOnlineStatus(String uid){
+    // Fetch the current user's ID from Firebase Authentication.
+
+    var userStatusDatabaseRef = FirebaseDatabase.instance.reference().child(
+        'statusFactors/drivers/' + uid);
+    var isOfflineForDatabase = {
+      "state": 'offline',
+      "last_changed": DateTime.now().toString(),
+    };
+    var isOnlineForDatabase = {
+      "state": 'online',
+      "last_changed": DateTime.now().toString(),
+    };
+
+    FirebaseDatabase.instance
+        .reference()
+        .child('.info/connected')
+        .onValue
+        .listen((event) {
+      print(".info/connected ${event.snapshot.value}");
+      if (event.snapshot.value == false) {
+        return;
+      }
+      userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then((value) {
+        print("userStatusDatabaseRef  ");
+        userStatusDatabaseRef.set(isOnlineForDatabase);
+      });
+    });
+
+  }
+
+  static void logtoFirebase(String uid, String method , String logType , String message) {
+    if(fireBaseLogEnable){
+      DateTime date = DateTime.now();
+      String timeSegmant = "${date.hour}${date.minute}${date.second}  ${date.microsecond}";
+      String finalString = '[$timeSegmant] [$logType] - [$method]------- [$message] ';
+
+      String timeKey = "${date.day.toString().padLeft(2,'0')}${date.month.toString().padLeft(2,'0')}${date.year}";
+
+      var userStatusDatabaseRef = FirebaseDatabase.instance.reference().child(
+          'logs/$uid/$timeKey').push();
+      userStatusDatabaseRef.set(finalString);
+    }
+
+    //[02092020 120708 658][1][INFO]> -Start All Devices--------------------
+  }
+
+  static void logtoFirebaseInfo(String method , String message) {
+    if(fireBaseLogEnable){
+      DateTime date = DateTime.now();
+      String timeSegmant = "${date.hour}${date.minute}${date.second}  ${date.microsecond}";
+      String finalString = '[$timeSegmant] [Info] - [$method]------- [$message] ';
+
+      String timeKey = "${date.day.toString().padLeft(2,'0')}${date.month.toString().padLeft(2,'0')}${date.year}";
+
+      var userStatusDatabaseRef = FirebaseDatabase.instance.reference().child(
+          'logs/${currentFirebaseUser.uid}/$timeKey').push();
+      userStatusDatabaseRef.set(finalString);
+    }
+
+    //[02092020 120708 658][1][INFO]> -Start All Devices--------------------
+  }
+
 
 
 }

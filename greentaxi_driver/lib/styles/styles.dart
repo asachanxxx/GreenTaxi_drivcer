@@ -107,6 +107,11 @@ final f_font_tabtitleColor = GoogleFonts.roboto(
     fontWeight: FontWeight.normal,
     color: BrandColors.colorPrimary);
 
+final f_font_tabtitleColorSelected = GoogleFonts.roboto(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: Color(0xfff57f17));
+
 ///Decorations
 
 final boxDecoDefault = BoxDecoration(

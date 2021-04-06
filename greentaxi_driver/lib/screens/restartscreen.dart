@@ -54,8 +54,7 @@ class _RestartScreenState extends State<RestartScreen> {
     driverRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         currentDriverInfo = Driver.fromSnapshot(snapshot);
-        print("Came");
-        print(currentDriverInfo.fullName);
+        print("Came getCurrentDriverInfo ${currentDriverInfo.fullName}");
       }
     });
 

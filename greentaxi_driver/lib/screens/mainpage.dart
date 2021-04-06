@@ -6,6 +6,7 @@ import 'package:greentaxi_driver/brand_colors.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/helpers/helpermethods.dart';
 import 'package:greentaxi_driver/shared/repository/companyrepository.dart';
+import 'package:greentaxi_driver/shared/repository/firebase_service.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/tabs/customertab.dart';
 import 'package:greentaxi_driver/tabs/earningstab.dart';
@@ -26,6 +27,7 @@ class _MainPageState extends State<MainPage>
 
   void onItemClicked(int index) {
     setState(() {
+      print("onItemClicked $index");
       selecetdIndex = index;
       tabController.index = selecetdIndex;
     });
@@ -47,6 +49,13 @@ class _MainPageState extends State<MainPage>
     HelperMethods.determinePosition().then((value) {
       print("currentpossitionCheck $value");
     });
+
+    if(currentFirebaseUser.uid != null){
+      FirebaseService.handleOnlineStatus(currentFirebaseUser.uid);
+    }
+
+
+
   }
 
   @override
@@ -55,6 +64,7 @@ class _MainPageState extends State<MainPage>
     tabController.dispose();
     super.dispose();
   }
+
 
 
   @override
@@ -72,39 +82,72 @@ class _MainPageState extends State<MainPage>
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+
+
+        // items: <BottomNavigationBarItem>[
+        //   BottomNavigationBarItem(
+        //     icon: Icon(Icons.home, color: Colors.black54),
+        //     title: Text(
+        //       'Home',
+        //       style: f_font_tabtitleColor,
+        //     ),
+        //   ),
+        //   BottomNavigationBarItem(
+        //     icon: Icon(Icons.credit_card, color: Colors.black54),
+        //     title: Text('Earnings', style: f_font_tabtitleColor),
+        //   ),
+        //   BottomNavigationBarItem(
+        //     icon: Icon(
+        //       Icons.star,
+        //       color: Colors.black54,
+        //     ),
+        //     title: Text('Customers', style: f_font_tabtitleColor),
+        //   ),
+        //   BottomNavigationBarItem(
+        //     icon: Icon(Icons.person, color: Colors.black54),
+        //     title: Text('Account', style: f_font_tabtitleColor),
+        //   ),
+        //   BottomNavigationBarItem(
+        //     icon: Icon(Icons.person, color: Colors.black54),
+        //     title: Text('Messaging', style: f_font_tabtitleColor),
+        //   ),
+        // ],
+        //
+
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home, color: Colors.black54),
-            title: Text(
-              'Home',
-              style: f_font_tabtitleColor,
-            ),
+            label: 'Home'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.credit_card, color: Colors.black54),
-            title: Text('Earnings', style: f_font_tabtitleColor),
+            label: 'Earnings'
+
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.star,
               color: Colors.black54,
             ),
-            title: Text('Customers', style: f_font_tabtitleColor),
+            label: 'Customers'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person, color: Colors.black54),
-            title: Text('Account', style: f_font_tabtitleColor),
+            label: 'Account'
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colors.black54),
-            title: Text('Ratings', style: f_font_tabtitleColor),
+            icon: Icon(Icons.message, color: Colors.black54),
+            label: 'Messages'
           ),
         ],
+
+
+        unselectedLabelStyle: f_font_tabtitleColor,
+        selectedLabelStyle: f_font_tabtitleColorSelected,
         currentIndex: selecetdIndex,
-        unselectedItemColor: BrandColors.colorPink,
-        selectedItemColor: BrandColors.colorOrange,
+        selectedItemColor: Color(0xfff57f17),
+        selectedIconTheme: IconThemeData(color: Color(0xfff57f17)) ,
         showUnselectedLabels: true,
-        selectedLabelStyle: TextStyle(fontSize: 12),
         type: BottomNavigationBarType.fixed,
         onTap: onItemClicked,
       ),
