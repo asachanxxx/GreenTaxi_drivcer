@@ -1,24 +1,15 @@
-import 'package:dropdownfield/dropdownfield.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:date_field/date_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
-import 'package:connectivity/connectivity.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:greentaxi_driver/brand_colors.dart';
-import 'package:greentaxi_driver/globalvariables.dart';
-import 'package:greentaxi_driver/models/drivers.dart';
-import 'package:greentaxi_driver/models/vehicleinfo.dart';
 import 'package:greentaxi_driver/screens/driverimagedetails.dart';
-import 'package:greentaxi_driver/screens/mainpage.dart';
-import 'package:greentaxi_driver/shared/auth/driverrepository.dart';
 import 'package:greentaxi_driver/shared/auth/userrepo.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
-import 'package:greentaxi_driver/widgets/dropDownScreen.dart';
-//import 'package:date_time_picker/date_time_picker.dart';
-import 'package:intl/intl.dart';
 
 class VehicleInfo extends StatefulWidget {
   static const String Id = 'vehicleinfo';
@@ -35,8 +26,7 @@ class Item {
 class _StartUpScrState extends State<VehicleInfo> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
-  DateTime selectedDate = DateTime.now();
-
+  DateTime selectedDate;
   final fleetnocontoller = TextEditingController();
   final modelcontoller = TextEditingController();
   final makecontoller = TextEditingController();
@@ -65,6 +55,7 @@ class _StartUpScrState extends State<VehicleInfo> {
   void registerVehicle() async {
     try {
       if (FirebaseAuth.instance.currentUser != null) {
+        print("selectedDate $selectedDate");
         DatabaseReference dbRef2 = FirebaseDatabase.instance.reference().child(
             'drivers/${FirebaseAuth.instance.currentUser.uid}/profile/accountStatus');
         dbRef2.set("NoImageDet");
@@ -84,8 +75,9 @@ class _StartUpScrState extends State<VehicleInfo> {
           'color': colorcontoller.text,
           'insuranceNo': insuranceNumbercontoller.text,
           'vehicleType': accountname,
-          'insuranceExpire': selectedDate.toString()
+          'insuranceExpire': "${selectedDate.year}/${selectedDate.month}/${selectedDate.day}"
         };
+
         dbRef.set(vehicleMap);
         dbRef = null;
         print('Save Done');
@@ -138,6 +130,7 @@ class _StartUpScrState extends State<VehicleInfo> {
 
   @override
   void initState() {
+    selectedDate = DateTime.now();
     super.initState();
   }
 
@@ -255,6 +248,19 @@ class _StartUpScrState extends State<VehicleInfo> {
                               SizedBox(
                                 height: 10,
                               ),
+                              DateField(
+                                onDateSelected: (DateTime value) {
+                                  setState(() {
+                                    selectedDate = value;
+                                  });
+                                },
+                                selectedDate: selectedDate,
+                                decoration:getInputDecoration(
+                                    'Insurance Expire Date'),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
                               Container(
                                 width: 350,
                                 decoration: BoxDecoration(
@@ -303,7 +309,6 @@ class _StartUpScrState extends State<VehicleInfo> {
                                 title: "Register",
                                 color: Color(0xFFff6f00),
                                 onPress: () async {
-                                  //Check network aialability
                                   var connectivity =
                                       await Connectivity().checkConnectivity();
                                   if (connectivity !=
@@ -350,6 +355,10 @@ class _StartUpScrState extends State<VehicleInfo> {
                                         'Oops! invalid color (EX:light green,red).');
                                     return;
                                   }
+                                  //
+                                  // final date2 = DateTime.now();
+                                  // final difference = date2.difference(selectedDate).inDays;
+                                  // print("Date differance $difference  selected date $selectedDate");
                                   if (insuranceNumbercontoller.text.length <
                                       3) {
                                     showSnackBar(

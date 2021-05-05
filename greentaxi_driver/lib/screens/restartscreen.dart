@@ -1,3 +1,4 @@
+import 'package:background_location/background_location.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +61,7 @@ class _RestartScreenState extends State<RestartScreen> {
 
     ridePositionStream =
         Geolocator.getPositionStream().listen((Position position) {
-      currentPosition = position;
+      currentPosition =new Location(longitude: position.longitude,latitude: position.altitude);
     });
 
     print(

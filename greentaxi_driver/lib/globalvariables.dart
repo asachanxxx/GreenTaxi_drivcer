@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:background_location/background_location.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ StreamSubscription<Position> homeTabPositionStream;
 
 StreamSubscription<Position> ridePositionStream;
 
-Position currentPosition;
+Location currentPosition;
 
 var assetsAudioPlayer = AssetsAudioPlayer.withId("0");
 
@@ -72,6 +73,11 @@ bool isOnline = false;
 bool vehicleInfoCompleteStatus;
 LatLng posError = LatLng(6.877133555388284, 79.98983549839619);
 String currentTab = "Home";
+
+final defaultLocationLat = 6.878947;
+final defaultLocationLng = 79.921883;
+
+
 
 String userProfilePath = "images/drivers/profilePics";
 String userDocumentPath = "images/drivers/docpath";

@@ -12,6 +12,7 @@ class SystemSettings extends ChangeNotifier {
   String imagePath;
   int ODR;
   int SCR;
+  bool fireBaseLogEnable;
 
   SystemSettings.fromDb( Map<dynamic, dynamic> map) {
     var data = map.values.toList().last;
@@ -25,6 +26,7 @@ class SystemSettings extends ChangeNotifier {
     imagePath =data['imagePath'];
     ODR =data['ODR'];
     SCR =data['SCR'];
+    fireBaseLogEnable = data['fireBaseLogEnable'];
   }
 }
 

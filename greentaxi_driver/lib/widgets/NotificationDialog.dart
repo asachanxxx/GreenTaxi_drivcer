@@ -188,7 +188,7 @@ class NotificationDialog extends StatelessWidget {
 
         rideRef = FirebaseDatabase.instance
             .reference()
-            .child('drivers/${currentDriverInfo.id}/profile');
+            .child('drivers/${currentFirebaseUser.uid}/profile');
         rideRef.child("inMiddleOfTrip").set("true");
 
         DatabaseReference newRideRefRide = FirebaseDatabase.instance

@@ -57,6 +57,8 @@ dependencies:
   flutter_sound: ^7.5.1+2
   permission_handler: ^5.0.1
   logger: ^0.9.4
+  date_field: ^0.1.2
+  background_location: ^0.4.1
 
 dev_dependencies:
   flutter_launcher_icons: ^0.8.1

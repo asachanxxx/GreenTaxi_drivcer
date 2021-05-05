@@ -11,6 +11,7 @@ import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/screens/login.dart';
 import 'package:greentaxi_driver/screens/mainpage.dart';
 import 'package:greentaxi_driver/screens/vehicleinfo.dart';
+import 'package:greentaxi_driver/shared/repository/serial_service.dart';
 import 'package:greentaxi_driver/styles/styles.dart';
 import 'package:greentaxi_driver/widgets/TaxiButton.dart';
 
@@ -111,9 +112,12 @@ class _CustomRegiterState extends State<RiderRegister> {
         DatabaseReference newuser = FirebaseDatabase.instance
             .reference()
             .child('drivers/${userCredential.user.uid}/profile');
+        var serial = await SerialService.getSerial(SetialTypes.driver);
+        print("serial $serial");
 
         Map usermap = {
           'key': userCredential.user.uid,
+          'id': serial,
           'fullName': fullnamecontoller.text,
           'email': emailcontoller.text,
           'phoneNumber': phonecontoller.text,
@@ -125,7 +129,7 @@ class _CustomRegiterState extends State<RiderRegister> {
           'datetime': DateTime.now().toString()
         };
         newuser.set(usermap);
-
+        print("After newuser.set(usermap) ${userCredential.user.uid}");
         DatabaseReference listUsers = FirebaseDatabase.instance
             .reference()
             .child('listTree/driverList/${userCredential.user.uid}');

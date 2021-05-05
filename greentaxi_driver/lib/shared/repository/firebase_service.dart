@@ -229,6 +229,20 @@ class FirebaseService {
     //[02092020 120708 658][1][INFO]> -Start All Devices--------------------
   }
 
+  static void logtoFirebaseInfoJournal(String message) {
+    if(fireBaseLogEnable){
+      DateTime date = DateTime.now();
+      String timeSegmant = "${date.hour}:${date.minute}:${date.second}  ${date.microsecond}";
+      String finalString = '[$timeSegmant] [Info] - ------- [$message] ';
 
+      String timeKey = "${date.day.toString().padLeft(2,'0')}${date.month.toString().padLeft(2,'0')}${date.year}";
+
+      var userStatusDatabaseRef = FirebaseDatabase.instance.reference().child(
+          'logJournal/${currentFirebaseUser.uid}/$timeKey').push();
+      userStatusDatabaseRef.set(finalString);
+    }
+
+    //[02092020 120708 658][1][INFO]> -Start All Devices--------------------
+  }
 
 }

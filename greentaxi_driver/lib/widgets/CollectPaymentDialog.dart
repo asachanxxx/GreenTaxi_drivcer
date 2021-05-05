@@ -48,7 +48,7 @@ class CollectPayment extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Amount above is the total fares to be charged to the rider',
+                'Amount above is the total fares to be charged to the rider(ඉහත මුදල යනු  පාරිබෝගිකයාගෙන් අය කළ යුතු මුළු ගාස්තු වේ)',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.roboto(color: Color(0xFF000000)),
               ),

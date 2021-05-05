@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greentaxi_driver/dataprovider/appdata.dart';
 import 'package:greentaxi_driver/globalvariables.dart';
 import 'package:greentaxi_driver/models/tripdetails.dart';
+import 'package:greentaxi_driver/shared/repository/firebase_service.dart';
 import 'package:greentaxi_driver/widgets/NotificationDialog.dart';
 import 'package:greentaxi_driver/widgets/ProgressDialog.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,9 @@ class PushNotificationService {
 
   Future<String> getToken() async {
     String token = await fcm.getToken();
+    FirebaseService.logtoFirebaseInfoJournal('token: $token');
     print('token: $token');
+
 
     DatabaseReference tokenRef = FirebaseDatabase.instance
         .reference()
@@ -37,6 +40,7 @@ class PushNotificationService {
     fcm.configure(
       onMessage: (Map<String, dynamic> message) async {
         print('onMessage : $message');
+        FirebaseService.logtoFirebaseInfoJournal('Incoming FCM Message:onMessage->:  $message');
         if (Platform.isAndroid) {
           print('onMessage : ${message['data']['ride_id']}');
         }
@@ -45,6 +49,7 @@ class PushNotificationService {
       },
       onLaunch: (Map<String, dynamic> message) async {
         print('onLaunch : $message');
+        FirebaseService.logtoFirebaseInfoJournal('Incoming FCM Message:onLaunch->:  $message');
         if (Platform.isAndroid) {
           print('onLaunch : ${message['data']['ride_id']}');
         }
@@ -53,6 +58,7 @@ class PushNotificationService {
       },
       onResume: (Map<String, dynamic> message) async {
         print('onResume : $message');
+        FirebaseService.logtoFirebaseInfoJournal('Incoming FCM Message:onResume->:  $message');
         if (Platform.isAndroid) {
           print('onLaunch : ${message['data']['ride_id']}');
         }
@@ -127,6 +133,7 @@ class PushNotificationService {
 
         print(
             "tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
+        FirebaseService.logtoFirebaseInfoJournal('Fetch Ride Info: driverID= ${tripDetails.commissionedDriverId} commissionApplicable = ${tripDetails.commissionApplicable}');
 
         showDialog(
           context: context,

@@ -26,7 +26,11 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  var emailController = TextEditingController();
+  var passwordController = TextEditingController();
+   var isId = true;
+  UserCredential userCredential;
   void showSnackBar(String title) {
     final snackbar = SnackBar(
       content: Text(
@@ -38,12 +42,6 @@ class _LoginPageState extends State<LoginPage> {
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  var emailController = TextEditingController();
-
-  var passwordController = TextEditingController();
-
   void login() async {
     //show please wait dialog
     showDialog(
@@ -54,15 +52,43 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
-    UserCredential userCredential = await FirebaseAuth.instance
-        .signInWithEmailAndPassword(
-            email: emailController.text, password: passwordController.text)
-        .catchError((ex) {
-      //check error and display message
-      Navigator.pop(context);
-      //PlatformException thisEx = ex;
-      showSnackBar(ex.message);
-    });
+    print("isId = $isId");
+
+    if(isId) {
+      final dbRef = FirebaseDatabase.instance.reference().child(
+          "listTree/driverList");
+      var val = await dbRef.orderByChild("id").equalTo("D00100").once();
+      print("val = ${val.value}");
+      var email = "No";
+      val.value.entries.forEach((snapshot) {
+        email = snapshot.value["email"];
+      });
+      print("email = $email");
+
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+          email: email, password: passwordController.text)
+          .catchError((ex) {
+        //check error and display message
+        Navigator.pop(context);
+        //PlatformException thisEx = ex;
+        showSnackBar(ex.message);
+      });
+
+
+    }else {
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+          email: emailController.text, password: passwordController.text)
+          .catchError((ex) {
+        //check error and display message
+        Navigator.pop(context);
+        //PlatformException thisEx = ex;
+        showSnackBar(ex.message);
+      });
+    }
+
+
 
     if(userCredential != null) {
       User user = userCredential.user;
@@ -176,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ],
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: getInputDecorationLogin(
-                                    'Email address', Icon(Icons.email)),
+                                    'Email address/Driver Id', Icon(Icons.email)),
                                 style: f_font_text_Input,
                               ),
                               SizedBox(
@@ -208,19 +234,22 @@ class _LoginPageState extends State<LoginPage> {
                                         'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)');
                                     return;
                                   }
-
-                                  if (!emailController.text.contains('@')) {
+                                  print("passwordController.text.length = ${emailController.text.length}");
+                                  if (emailController.text.length == 6 ) {
+                                    isId = true;
+                                  }else if (emailController.text.contains('@')) {
+                                    isId = false;
+                                  }else{
                                     showSnackBar(
-                                        'Username or Password incorrect(පරිශීලක නාමය හෝ මුරපදය වැරදිය)');
+                                        '1Username or Password incorrect(පරිශීලක නාමය හෝ මුරපදය වැරදිය)');
                                     return;
                                   }
 
                                   if (passwordController.text.length < 8) {
                                     showSnackBar(
-                                        'Username or Password incorrect(පරිශීලක නාමය හෝ මුරපදය වැරදිය)');
+                                        '2Username or Password incorrect(පරිශීලක නාමය හෝ මුරපදය වැරදිය)');
                                     return;
                                   }
-
                                   login();
                                 },
                               ),

@@ -117,7 +117,9 @@ class HelperMethods {
   // }
 
   static int estimateFares(DirectionDetails details, String vehicleType,TripDetails tripDetails) {
-    var PerMinute = 2;
+    var PerMinute = 2.5;
+
+    print("estimateFares->vehicleType = $vehicleType");
 
     /*
       Bikes-25
@@ -168,11 +170,13 @@ class HelperMethods {
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type3") {
         // Flex-Alto
+
         tukObject = globalVTypes
             .singleWhere((element) => element.name.trim() == "Type3");
         baseFire = tukObject.baseFare;
+        print("vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
         distanceFire =applyFireLogic(details.distanceValue,tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = (details.durationValue) * tukObject.minutePrice;
       } else if (vehicleType == "Type4") {
         // Mini
         tukObject = globalVTypes
@@ -214,21 +218,27 @@ class HelperMethods {
       double SCR = double.minPositive;
       double ODR = double.minPositive;
 
+      ///Company payable amount calc
       if(currentDriverInfo == null || currentDriverInfo.SCR == null ){
         SCR = ((distanceFire +timeFire) * 10)/100;
       }else {
         SCR = ((distanceFire + timeFire) * currentDriverInfo.SCR) / 100;
       }
 
-      if(currentDriverInfo == null || currentDriverInfo.ODR == null ){
-        ODR = ((distanceFire +timeFire) * 5)/100;
-      }else {
-        ODR = ((distanceFire + timeFire) * currentDriverInfo.ODR) / 100;
+      if(tripDetails.commissionApplicable) {
+        if (currentDriverInfo == null || currentDriverInfo.ODR == null) {
+          ODR = ((distanceFire + timeFire) * 5) / 100;
+        } else {
+          ODR = ((distanceFire + timeFire) * currentDriverInfo.ODR) / 100;
+        }
+      }else{
+        ODR = 0;
       }
 
       paymentDetails.companyPayable = SCR;
       paymentDetails.commissionApplicable = tripDetails.commissionApplicable;
       paymentDetails.commission = ODR;
+
 
 
       print(
@@ -242,11 +252,11 @@ class HelperMethods {
   }
 
   static double applyFireLogic(int kms, double kmPrice) {
-    var disKms = kms/1000;
-    if (disKms <=4) {
+    //var disKms = kms/1000;
+    if (kms <=4) {
       return kmPrice * 4;
     } else {
-      return (kms / 1000) * kmPrice;
+      return (kms) * kmPrice;
     }
   }
 
@@ -333,7 +343,7 @@ class HelperMethods {
       }
     }
 
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation,forceAndroidLocationManager: true);
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 
 }

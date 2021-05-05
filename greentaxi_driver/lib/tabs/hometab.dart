@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:background_location/background_location.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -34,7 +35,7 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   var earnignController = TextEditingController();
   var passwordController = TextEditingController();
-
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
   GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
 
@@ -56,21 +57,34 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   //    earnings = 0.0;
   // }
 
-  void getCurrentPosition() async {
+  @override
+  void initState() {
+    super.initState();
+    currentTab = "Home";
+    print("Just before getCurrentPosition");
+    print("System Config: fireBaseLogEnable ${systemSettings != null? systemSettings.fireBaseLogEnable: "Config Null"}");
+    fireBaseLogEnable = systemSettings != null? systemSettings.fireBaseLogEnable:false;
+    initializeTab();
+  }
+
+  void initializeTab() async {
     logger.d("Inside getCurrentPosition");
     try {
-      Position position = await HelperMethods.determinePositionRaw();
-      // setState(() {
-      currentPosition = position;
-      LatLng pos = LatLng(position.latitude, position.longitude);
-      driverInitialPos = pos;
-      // });
+      //Position position = await HelperMethods.determinePositionRaw();
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.bestForNavigation);
+      currentPosition = Location(longitude: position.longitude,latitude: position.latitude);
+      print('Inside getCurrentPosition position.latitude = ${position != null ? position.latitude : "position Is empty"} ');
+      print('Inside getCurrentPosition currentPosition.latitude = ${currentPosition != null ? currentPosition.latitude : "currentPosition Is empty"} ');
+
+      await getCurrentDriverInfo(currentPosition);
     } catch (e) {
       logger.e('Error: ${e.toString()}');
     }
   }
 
-  void getCurrentDriverInfo() async {
+  Future<void> getCurrentDriverInfo(Location currentPositionx) async {
+    print("Inside getCurrentDriverInfo");
     FirebaseService.logtoFirebaseInfo("HomeTab- getCurrentDriverInfo ","Inside the Method");
     currentFirebaseUser = FirebaseAuth.instance.currentUser;
     DatabaseReference driverRef = FirebaseDatabase.instance
@@ -123,13 +137,11 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     //logger.d("Vehicle type :- ${currentVehicleInfomation.vehicleType}");
     logger.d(
         "Vehicle type VtypeConverter :- ${VtypeConverter(currentVehicleInfomation.vehicleType)}");
-
+    var latlng = new LatLng(currentPositionx.latitude, currentPositionx.longitude);
     PushNotificationService pushNotificationService = PushNotificationService();
-    pushNotificationService.initialize(context, driverInitialPos);
+    pushNotificationService.initialize(context, latlng);
     pushNotificationService.getToken();
   }
-
-  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void showSnackBar(String title) {
     final snackbar = SnackBar(
@@ -300,14 +312,9 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
             ));
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    currentTab = "Home";
-    getCurrentPosition();
-    getCurrentDriverInfo();
-  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -327,7 +334,8 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
             print("Map Controller Initialzied");
             mapController = controller;
 
-            //getCurrentPosition();
+            print('Inside GoogleMap currentPosition.latitude = ${currentPosition != null ? currentPosition.latitude : "currentPosition Is empty"} ');
+
 
 
           },
@@ -601,17 +609,20 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
           Icons.signal_wifi_off);
       return;
     }
+
+    logger.d('Inside GoOnline currentPosition.latitude = ${currentPosition != null ? currentPosition.latitude : "currentPosition Is empty"} ');
+
     isOnline = true;
     cancelLocationUpdate = false;
     Geofire.initialize('driversAvailable');
     logger.d("Geofire Started");
     Geofire.setLocation(
         currentFirebaseUser.uid,
-        driverInitialPos != null
-            ? driverInitialPos.latitude
+        currentPosition != null
+            ? currentPosition.latitude
             : posError.latitude,
-        driverInitialPos != null
-            ? driverInitialPos.longitude
+        currentPosition != null
+            ? currentPosition.longitude
             : posError.longitude);
     print("Location set");
 
@@ -628,6 +639,8 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     tripRequestRef.onValue.listen((event) {
       logger.d('tripRequestRef.onValue.listen-> ${event}');
     });
+
+
   }
 
   /*
@@ -671,16 +684,21 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
   * */
 
   void getLocationUpdates() {
+
+    // var lastKnownPosition =  Geolocator.getLastKnownPosition().then((value){
+    //   logger.d("lastKnownPosition ${value.latitude}");
+    //   currentPosition = new Location(latitude: value.latitude, longitude: value.longitude);
+    // });
     logger.d(
-        " getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
+        "getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isAvailable= $isAvailable");
     homeTabPositionStream = Geolocator.getPositionStream(
             desiredAccuracy: LocationAccuracy.bestForNavigation,
             distanceFilter: 2)
         .listen((Position position) {
       logger.d(
-          " getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
+          "getLocationUpdates Status  Inside= $cancelLocationUpdate   isAvailable= $isAvailable");
 
-      currentPosition = position;
+      currentPosition = new Location(longitude: position.longitude,latitude: position.latitude);
       if (isAvailable) {
         //Update the location to the firebase
         logger.d(
@@ -691,9 +709,10 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
       if (cancelLocationUpdate) {
         homeTabPositionStream?.cancel();
       } else {
-        logger.d("Inside Move Camara Position..............");
         LatLng pos = LatLng(position.latitude, position.longitude);
-        mapController.animateCamera(CameraUpdate.newLatLng(pos));
+        if(mapController != null) {
+          mapController.animateCamera(CameraUpdate.newLatLng(pos));
+        }
       }
     });
   }

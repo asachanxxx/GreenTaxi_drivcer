@@ -28,6 +28,6 @@ class VehicleInfomation {
     this.color = snapshot.value['color'];
     this.insuranceNo = snapshot.value['insuranceNo'];
     this.vehicleType = snapshot.value['vehicleType'];
-    this.insuranceExpire = DateTime.parse(snapshot.value['insuranceExpire']);
+    //this.insuranceExpire = DateTime.parse(snapshot.value['insuranceExpire']);
   }
 }

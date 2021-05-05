@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:io';
+import 'package:background_location/background_location.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -69,14 +70,25 @@ class _NewTripPageState extends State<NewTripPage> {
 
   double cumDistance = 0;
   double cumDistanceGro = 0;
-  var latitudex = "";
-  var longitudex = "";
-  var speedx = "";
-  var timestampx = "";
-  var accuracyx = "0";
-  var distancex = "";
   var oldPositionLatlng;
   var oldTime;
+
+
+  double totalFare = 0.00;
+  double totalTime = 0;
+  double totalWaiting = 0;
+  double totalDistance = 0.00;
+  double totalSpeed = 0;
+  double kmPrice = 45;
+  String infoPanel =  "Meter Ready..";
+  String accuracy = "0";
+  Location oldPosition2;
+  bool startSwitch = true;
+  bool isWaited = true;
+  bool isStopTimer = false;
+  String startButtonText = "START";
+  String waitButtonText = "WAIT";
+
 
   String GetTimeString(DateTime dateTime) {
     return dateTime.hour.toString() +
@@ -88,43 +100,98 @@ class _NewTripPageState extends State<NewTripPage> {
         dateTime.microsecond.toString();
   }
 
-  double CalDistance(Position pos1, Position pos2, DistanceType type) {
-    double R = (type == DistanceType.Miles) ? 3960 : 6371;
-    double dLat = this.toRadian(pos2.latitude - pos1.latitude);
-    double dLon = this.toRadian(pos2.longitude - pos1.longitude);
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(this.toRadian(pos1.latitude)) *
-            cos(this.toRadian(pos2.latitude)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    double c = 2 * asin(min(1, sqrt(a)));
-    double d = R * c;
-    return d;
-  }
-
-  double toRadian(double val) {
-    return (pi / 180) * val;
-  }
-
   /*
     * The technology behind this is that if the map kit will calculate the rotations according to the given lat langs . so if we give lat langs too far away
     * this calculation will not give us a correct heading direction. so fo that we use old position just before we been and set it in to
     *  -- oldPosition
     * Variable. so oldPosition always contain before position that we was and that was so short. so the heading will be calculated as the lat lng changes
     * */
-  void getLocationUpdates() {
-    LatLng oldPosition = LatLng(0, 0);
+  // void getLocationUpdates() {
+  //   LatLng oldPosition = LatLng(0, 0);
+  //
+  //   ridePositionStream = Geolocator.getPositionStream(
+  //           desiredAccuracy: LocationAccuracy.best, distanceFilter: 1)
+  //       .listen((Position position) {
+  //     myPosition = position;
+  //     //currentPosition = position;
+  //
+  //     LatLng pos = LatLng(position.latitude, position.longitude);
+  //
+  //     var rotation = MapKitHelper.getMarkerRotation(oldPosition.latitude,
+  //         oldPosition.longitude, pos.latitude, pos.longitude);
+  //
+  //     print('my rotation = $rotation');
+  //
+  //     Marker movingMaker = Marker(
+  //       markerId: MarkerId('moving'),
+  //       position: pos,
+  //       icon: movingMarkerIcon,
+  //       rotation: rotation,
+  //       infoWindow: InfoWindow(title: 'Current Location'),
+  //     );
+  //
+  //     setState(() {
+  //       CameraPosition cp = new CameraPosition(target: pos, zoom: 17);
+  //       rideMapController.animateCamera(CameraUpdate.newCameraPosition(cp));
+  //
+  //       _markers.removeWhere((marker) => marker.markerId.value == 'moving');
+  //       _markers.add(movingMaker);
+  //
+  //       //var loc = position;
+  //       // latitudex = loc.latitude.toString();
+  //       // longitudex = loc.longitude.toString();
+  //       // speedx = loc.speed.toString();
+  //       // timestampx = GetTimeString(loc.timestamp);
+  //       // accuracyx = loc.accuracy.toString();
+  //     });
+  //     /*
+  //     This will always update our current positions to old position so we can calculate the Rotation of the Marker
+  //     * */
+  //     oldTime = position.timestamp;
+  //     oldPositionLatlng = position;
+  //     oldPosition = pos;
+  //     updateTripDetails();
+  //     Map locationMap = {
+  //       'latitude': myPosition.latitude.toString(),
+  //       'longitude': myPosition.longitude.toString(),
+  //     };
+  //     print("Updating driver_location $locationMap");
+  //
+  //     rideRef = FirebaseDatabase.instance
+  //         .reference()
+  //         .child("rideRequest/${widget.tripDetails.rideID}");
+  //     rideRef.child('driver_location').set(locationMap);
+  //
+  //   });
+  // }
 
-    ridePositionStream = Geolocator.getPositionStream(
-            desiredAccuracy: LocationAccuracy.best, distanceFilter: 1)
-        .listen((Position position) {
-      myPosition = position;
-      currentPosition = position;
+  Future<void> startLocationUpdate() async{
+    oldPosition2 = Location(longitude: currentPosition.longitude, latitude: currentPosition.latitude);
 
-      LatLng pos = LatLng(position.latitude, position.longitude);
+    isWaited = false;
+    waitButtonText = "WAIT";
+    BackgroundLocation.stopLocationService();
 
-      var rotation = MapKitHelper.getMarkerRotation(oldPosition.latitude,
-          oldPosition.longitude, pos.latitude, pos.longitude);
+    await BackgroundLocation.setAndroidNotification(
+      title: "Background service is running",
+      message: "Background location in progress",
+      icon: "@mipmap/ic_launcher",
+    );
+
+    print('Inside startLocationUpdate');
+    await BackgroundLocation.startLocationService(distanceFilter: 20);
+    print('Inside startLocationUpdate 1');
+    BackgroundLocation.getLocationUpdates((location) {
+      print('Inside startLocationUpdate 2 location Details ${location != null? location.latitude:"Location Null"}');
+      var datex = DateTime.now();
+      currentPosition = location;
+      print('Inside startLocationUpdate 3 location Details ${location != null? location.latitude:"Location Null"}');
+
+      LatLng pos = LatLng(location.latitude, location.longitude);
+      print('Inside startLocationUpdate 4 location Details ${location != null? location.latitude:"Location Null"}');
+
+      var rotation = MapKitHelper.getMarkerRotation(oldPosition2.latitude,
+          oldPosition2.longitude, pos.latitude, pos.longitude);
 
       print('my rotation = $rotation');
 
@@ -143,41 +210,24 @@ class _NewTripPageState extends State<NewTripPage> {
         _markers.removeWhere((marker) => marker.markerId.value == 'moving');
         _markers.add(movingMaker);
 
-        var loc = position;
-        latitudex = loc.latitude.toString();
-        longitudex = loc.longitude.toString();
-        speedx = loc.speed.toString();
-        timestampx = GetTimeString(loc.timestamp);
-        accuracyx = loc.accuracy.toString();
+        this.accuracy = location.accuracy.toStringAsFixed(0);
+        infoPanel = "On Trip";
+        totalSpeed = location.speed;
+        totalDistance =  totalDistance + CalDistance(oldPosition2!= null ? oldPosition2: location,location,DistanceType.Kilometers);
+        var totalDistanceAdj = totalDistance != 0? totalDistance:1;
+        totalFare = 50 + (kmPrice * totalDistanceAdj);
+        print("distance  $totalDistance");
       });
 
-      ///Mechanical GPS Calculations
-      if (oldPositionLatlng != null) {
-        var distance =
-            CalDistance(position, oldPositionLatlng, DistanceType.Kilometers);
-        cumDistance += distance;
-        distancex = distance.toStringAsFixed(2);
-        var geoLocatorDistance = Geolocator.distanceBetween(
-            oldPosition.latitude,
-            oldPosition.longitude,
-            position.latitude,
-            position.longitude);
-        geoLocatorDistance = geoLocatorDistance / 1000;
-        cumDistanceGro += geoLocatorDistance;
-        print(
-            "Stats: ${position.latitude.toString()} |${position.longitude.toString()} |${oldPosition.latitude.toString()} |${oldPosition.longitude.toString()}|    $distancex | ${cumDistance.toStringAsFixed(4)} | ${geoLocatorDistance.toStringAsFixed(4)}| $accuracyx| $timestampx ");
-      }
+      print("""\n  totalSpeed:  $totalSpeed totalDistance: $totalDistance totalFare: $totalFare Accuracy: $accuracy""");
+      oldPosition2 = location;
+      print('Inside startLocationUpdate 5');
 
-      /*
-      This will always update our current positions to old position so we can calculate the Rotation of the Marker
-      * */
-      oldTime = position.timestamp;
-      oldPositionLatlng = position;
-      oldPosition = pos;
-      updateTripDetails();
+      updateTripDetails(location);
+      print('Inside startLocationUpdate 6');
       Map locationMap = {
-        'latitude': myPosition.latitude.toString(),
-        'longitude': myPosition.longitude.toString(),
+        'latitude': location.latitude.toString(),
+        'longitude': location.longitude.toString(),
       };
       print("Updating driver_location $locationMap");
 
@@ -187,6 +237,78 @@ class _NewTripPageState extends State<NewTripPage> {
       rideRef.child('driver_location').set(locationMap);
     });
   }
+
+  void resetTelemetryValues(){
+    setState(() {
+      totalSpeed = 0.00;
+      totalDistance = 0.00;
+      totalTime = 0;
+      durationCounter = 0;
+    });
+
+  }
+
+
+  void updateTripDetails(Location location) async {
+    print('Inside : updateTripDetails');
+
+    //this if statement will track another trip reqest is on the line if so will skip this entire process
+    if (!isRequestingDirection) {
+      LatLng destinationLatLng;
+      isRequestingDirection = true;
+
+      if (location == null) {
+        return;
+      }
+
+      var positionLatLng = LatLng(location.latitude, location.longitude);
+
+      if (status == 'accepted') {
+        /*
+        * This means we arrived the pickup location
+        * */
+        destinationLatLng = widget.tripDetails.pickup;
+      } else {
+        destinationLatLng = widget.tripDetails.destination;
+      }
+
+      //This is awaitable for to await till directiond details came back from firestore
+      var directionDetails = await HelperMethods.getDirectionDetails(
+          positionLatLng, destinationLatLng);
+
+      if (directionDetails != null) {
+        print(directionDetails.durationText);
+
+        setState(() {
+          //This will update the duration to go in the screen with direction details realtime
+          durationString = directionDetails.durationText;
+          DistanceString = directionDetails.distanceText;
+        });
+      } else {
+        print('Direction Details are empty');
+      }
+      isRequestingDirection = false;
+    }
+  }
+
+
+  double CalDistance(Location pos1, Location pos2, DistanceType type){
+    print("pos1 : ${pos1.latitude} pos2: ${pos2.latitude}");
+    double R = (type == DistanceType.Miles) ? 3960 : 6371;
+    double dLat = this.toRadian(pos2.latitude - pos1.latitude);
+    double dLon = this.toRadian(pos2.longitude - pos1.longitude);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(this.toRadian(pos1.latitude)) * cos(this.toRadian(pos2.latitude)) *
+            sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * asin(min(1, sqrt(a)));
+    double d = R * c;
+    //d = (d*80)/100;
+    return d;
+  }
+  double toRadian(double val) {
+    return (pi / 180) * val;
+  }
+
 
   void createMarker() {
     if (movingMarkerIcon == null) {
@@ -208,6 +330,7 @@ class _NewTripPageState extends State<NewTripPage> {
     // TODO: implement initState
     super.initState();
     //print("NewTripPage  tripDetails ${tripDetails.rideID}");
+
     acceptTrip();
   }
 
@@ -235,15 +358,24 @@ class _NewTripPageState extends State<NewTripPage> {
               rideMapController = controller;
 
               setState(() {
-                mapPaddingBottom = (Platform.isIOS) ? 255 : 290;
+                mapPaddingBottom = (Platform.isIOS) ? 255 : 370;
               });
+
+              // Position position = await HelperMethods.determinePositionRaw();
+              // currentPosition = new Location(longitude: position.longitude,latitude: position.altitude);
+
+              ///Login the details
+              print('Inside GoogleMap');
+              print('Inside GoogleMap currentPosition.latitude = ${currentPosition != null ? currentPosition.latitude : "currentPosition Is empty"} ');
+              print('Inside GoogleMap widget.tripDetails.pickup = ${widget.tripDetails.pickup != null ? widget.tripDetails.pickup.latitude : "widget.tripDetails.pickup Is empty"} ');
 
               var currentLatLng =
                   LatLng(currentPosition.latitude, currentPosition.longitude);
               var pickupLatLng = widget.tripDetails.pickup;
               await getDirection(currentLatLng, pickupLatLng);
-              print('my rotation getLocationUpdates()');
-              getLocationUpdates();
+
+              //getLocationUpdates();
+              await startLocationUpdate();
             },
           ),
           Positioned(
@@ -268,7 +400,7 @@ class _NewTripPageState extends State<NewTripPage> {
                   )
                 ],
               ),
-              height: Platform.isIOS ? 280 : 300,
+              height: Platform.isIOS ? 280 : 370,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 child: Column(
@@ -356,6 +488,114 @@ class _NewTripPageState extends State<NewTripPage> {
                     Row(
                       children: <Widget>[
                         Expanded(
+                          child:
+                          Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius:
+                              BorderRadius.all(Radius.circular((20))),
+                              border: Border.all(
+                                  width: 1.0, color: Color(0xFF757575)),
+                            ),
+                            child:
+                                 Row(
+                                   mainAxisAlignment: MainAxisAlignment.center,
+                                   crossAxisAlignment: CrossAxisAlignment.center,
+                                   children:<Widget> [
+                                     SizedBox(width: 5,),
+                                     Column(
+                                       children: <Widget>[
+                                         SizedBox(height: 10,),
+                                         Text("${totalDistance.toStringAsFixed(2)}" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600 ,color: Color(0xFFFFFFFF)),),
+                                         //Text("152.52" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF))),
+                                         Text("km" , style: GoogleFonts.orbitron(fontSize: 12 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF)),)
+                                       ],
+                                     ),
+                                   ],
+                                 ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Expanded(
+                          child:
+                          Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius:
+                              BorderRadius.all(Radius.circular((20))),
+                              border: Border.all(
+                                  width: 1.0, color: Color(0xFF757575)),
+                            ),
+                            child:
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+
+                              children:<Widget> [
+                                SizedBox(width: 5,),
+                                Column(
+                                  children: <Widget>[
+                                    SizedBox(height: 10,),
+                                    Text("${totalSpeed.toStringAsFixed(2)}" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600 ,color: Color(0xFFFFFFFF)),),
+                                    //Text("152.52" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF))),
+                                    Text("km/h" , style: GoogleFonts.orbitron(fontSize: 12 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF)),)
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Expanded(
+                          child:
+                          Container(
+                            height: 50,
+
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius:
+                              BorderRadius.all(Radius.circular((20))),
+                              border: Border.all(
+                                  width: 1.0, color: Color(0xFF757575)),
+                            ),
+                            child:
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+
+                              children:<Widget> [
+                                SizedBox(width: 5,),
+                                Column(
+                                  children: <Widget>[
+                                    SizedBox(height: 10,),
+                                    Text("${(durationCounter/60).toStringAsFixed(2)}" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600 ,color: Color(0xFFFFFFFF)),),
+                                    //Text("152.52" , style: GoogleFonts.orbitron(fontSize: 24 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF))),
+                                    Text("min" , style: GoogleFonts.orbitron(fontSize: 12 , fontWeight: FontWeight.w600,color: Color(0xFFFFFFFF)),)
+                                   ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    BrandDivider(),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
                           child: GestureDetector(
                             onTap: () {
                               launch("tel://${widget.tripDetails.riderPhone}");
@@ -392,7 +632,7 @@ class _NewTripPageState extends State<NewTripPage> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              if(status == 'init' || status == 'init'){
+                              if(status == 'init'){
                                 var driverLocation = LatLng(currentPosition.latitude,
                                     currentPosition.longitude);
                                 _launchMapsUrl(
@@ -499,9 +739,6 @@ class _NewTripPageState extends State<NewTripPage> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
                     BrandDivider(),
                     SizedBox(
                       height: 10,
@@ -528,10 +765,10 @@ class _NewTripPageState extends State<NewTripPage> {
                               "LatLng pos.longitude ${currentPosition.longitude}");
                           print(
                               "LatLng pos.latitude ${currentPosition.latitude}");
-                          var driverLocation = LatLng(currentPosition.latitude,
-                              currentPosition.longitude);
-                          _launchMapsUrl(
-                              driverLocation, widget.tripDetails.pickup);
+                          // var driverLocation = LatLng(currentPosition.latitude,
+                          //     currentPosition.longitude);
+                          // _launchMapsUrl(
+                          //     driverLocation, widget.tripDetails.pickup);
                         }
 
                         else if (status == 'accepted') {
@@ -549,8 +786,9 @@ class _NewTripPageState extends State<NewTripPage> {
                         }
 
                         else if (status == 'arrived') {
-                          _launchMapsUrl(widget.tripDetails.pickup,
-                              widget.tripDetails.destination);
+                          resetTelemetryValues();
+                          // _launchMapsUrl(widget.tripDetails.pickup,
+                          //     widget.tripDetails.destination);
 
                           status = 'ontrip';
                           //Update the firebase status
@@ -559,7 +797,7 @@ class _NewTripPageState extends State<NewTripPage> {
 
                           setState(() {
                             cumDistance = 0.0;
-                            distancex = "0.00";
+                            //distancex = "0.00";
                             cumDistanceGro = 0.0;
                             buttonTitle = 'END TRIP';
                             buttonColor = Color(0xFF263238);
@@ -660,7 +898,7 @@ class _NewTripPageState extends State<NewTripPage> {
 
             setState(() {
               cumDistance = 0.0;
-              distancex = "0.00";
+              //distancex = "0.00";
               cumDistanceGro = 0.0;
 
               buttonTitle = 'ARRIVED';
@@ -679,7 +917,7 @@ class _NewTripPageState extends State<NewTripPage> {
 
             setState(() {
               cumDistance = 0.0;
-              distancex = "0.00";
+              //distancex = "0.00";
               cumDistanceGro = 0.0;
               buttonTitle = 'END TRIP';
               buttonColor = Colors.red[900];
@@ -705,50 +943,7 @@ class _NewTripPageState extends State<NewTripPage> {
   }
 
 
-  void updateTripDetails() async {
-    print('Inside : updateTripDetails');
-
-    //this if statement will track another trip reqest is on the line if so will skip this entire process
-    if (!isRequestingDirection) {
-      LatLng destinationLatLng;
-      isRequestingDirection = true;
-
-      if (myPosition == null) {
-        return;
-      }
-
-      var positionLatLng = LatLng(myPosition.latitude, myPosition.longitude);
-
-      if (status == 'accepted') {
-        /*
-        * This means we arrived the pickup location
-        * */
-        destinationLatLng = widget.tripDetails.pickup;
-      } else {
-        destinationLatLng = widget.tripDetails.destination;
-      }
-
-      //This is awaitable for to await till directiond details came back from firestore
-      var directionDetails = await HelperMethods.getDirectionDetails(
-          positionLatLng, destinationLatLng);
-
-      if (directionDetails != null) {
-        print(directionDetails.durationText);
-
-        setState(() {
-          //This will update the duration to go in the screen with direction details realtime
-          durationString = directionDetails.durationText;
-          DistanceString = directionDetails.distanceText;
-        });
-      } else {
-        print('Direction Details are empty');
-      }
-      isRequestingDirection = false;
-    }
-  }
-
-  Future<void> getDirection(
-      LatLng pickupLatLng, LatLng destinationLatLng) async {
+  Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
     showDialog(
         barrierDismissible: false,
         context: context,
@@ -857,8 +1052,6 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
-
-
   void startTimer() {
     const interval = Duration(seconds: 1);
     timer = Timer.periodic(interval, (timer) {
@@ -888,23 +1081,31 @@ class _NewTripPageState extends State<NewTripPage> {
         myPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
       }
 
-
       var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
-
       var directionDetails = await HelperMethods.getDirectionDetails(
           widget.tripDetails.pickup, currentLatLng);
-
       Navigator.pop(context);
 
+      var timeInMinutes = durationCounter/60;
+
+      DirectionDetails directionDetailsGPS = new DirectionDetails(
+          distanceValue: totalDistance!= null? totalDistance.toInt(): 0,
+          distanceText: totalDistance!=null? totalDistance.toInt().toString() :0,
+          durationValue:timeInMinutes!=null? timeInMinutes.toInt(): 0,
+          durationText: timeInMinutes!=null? timeInMinutes.toInt().toString(): "0"
+      );
 
       int fares = HelperMethods.estimateFares(
-          directionDetails, VtypeConverter(currentVehicleInfomation.vehicleType), widget.tripDetails);
+          directionDetailsGPS, VtypeConverter(currentVehicleInfomation.vehicleType), widget.tripDetails);
 
       rideRef.child('fares').set(fares.toString());
 
       rideRef.child('status').set('ended');
 
-      ridePositionStream.cancel();
+      if(ridePositionStream != null){
+        ridePositionStream.cancel();
+      }
+
 
       /// after ending ride the drivers newtrip status must set to waiting
       rideRef = FirebaseDatabase.instance
@@ -926,18 +1127,10 @@ class _NewTripPageState extends State<NewTripPage> {
       topUpEarnings(fares);
 
       ///Saving the Trip history
-      driverTripHistory(widget.tripDetails, fares, directionDetails);
+      driverTripHistory(widget.tripDetails, fares, directionDetails ,directionDetailsGPS);
 
       ///Saving the Payment Details
-      driverPaymentHistory(widget.tripDetails, directionDetails);
-
-      // ///Update Cash Flows
-      // updateCashFlows(widget.tripDetails);
-
-      print("Came point 1");
-
-      
-      
+      driverPaymentHistory(widget.tripDetails, directionDetails, directionDetailsGPS);
 
       showDialog(
           context: context,
@@ -970,37 +1163,44 @@ class _NewTripPageState extends State<NewTripPage> {
     });
   }
 
-  void driverTripHistory(
-  
-      TripDetails tripDetails, int fare, DirectionDetails directionDetails) {
+  void driverTripHistory(TripDetails tripDetails, int fare, DirectionDetails directionDetails,DirectionDetails directionDetailsGPS) {
     if (tripDetails != null) {
       print("inside driverTripHistory $currentFirebaseUser.uid");
       DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
           'drivers/${currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
 
       Map pickupMap = {
-        'latitude': tripDetails.pickup.latitude.toString(),
-        'longitude': tripDetails.pickup.longitude.toString(),
+        'latitude': tripDetails.pickup!= null? tripDetails.pickup.latitude.toString():defaultLocationLat,
+        'longitude': tripDetails.pickup!= null? tripDetails.pickup.longitude.toString():defaultLocationLng,
       };
+
       Map destinationMap = {
-        'latitude': tripDetails.destination.latitude.toString(),
-        'longitude': tripDetails.destination.longitude.toString(),
+        'latitude': tripDetails.destination!= null ? tripDetails.destination.latitude.toString():defaultLocationLat ,
+        'longitude': tripDetails.destination!= null ? tripDetails.destination.longitude.toString():defaultLocationLng,
       };
 
       Map directionMap = {
-        'distanceText': directionDetails.distanceText.toString(),
-        'distanceValue': directionDetails.distanceValue.toString(),
-        'durationValue': directionDetails.durationValue.toString(),
-        'durationText': directionDetails.durationText.toString(),
+        'distanceText': directionDetailsGPS!= null? directionDetailsGPS.distanceText.toString():"0",
+        'distanceValue': directionDetailsGPS!= null? directionDetailsGPS.distanceValue.toString():"0",
+        'durationValue': directionDetailsGPS!= null?directionDetailsGPS.durationValue.toString():"0",
+        'durationText': directionDetailsGPS!= null? directionDetailsGPS.durationText.toString():"0",
+      };
+
+      Map directionMapGoogle = {
+        'distanceText':directionDetails!= null?  directionDetails.distanceText.toString():"0",
+        'distanceValue': directionDetails!= null? directionDetails.distanceValue.toString():"0",
+        'durationValue':directionDetails!= null? directionDetails.durationValue.toString():"0",
+        'durationText':directionDetails!= null? directionDetails.durationText.toString():"0",
       };
 
       Map historyMap = {
-        "rideID": tripDetails.rideID,
+        "rideID": tripDetails !=null? tripDetails.rideID :"",
         "pickup": pickupMap,
         "destination": destinationMap,
         "directionDetails": directionMap,
-        "pickupAddress": tripDetails.pickupAddress,
-        "destinationAddress": tripDetails.destinationAddress,
+        "directionDetailsGoogle": directionMapGoogle,
+        "pickupAddress": tripDetails !=null? tripDetails.pickupAddress :"",
+        "destinationAddress":  tripDetails !=null?tripDetails.destinationAddress :"",
         "fare": fare,
         "date": DateTime.now().toString()
       };
@@ -1010,13 +1210,34 @@ class _NewTripPageState extends State<NewTripPage> {
     }
   }
 
-  void driverPaymentHistory(
-      TripDetails tripDetailsx, DirectionDetails directionDetails) async {
+  void driverPaymentHistory(TripDetails tripDetailsx, DirectionDetails directionDetails,DirectionDetails directionDetailsGPS) async {
+
     print("inside driverTripHistory $currentFirebaseUser.uid");
     DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
         'drivers/${currentFirebaseUser.uid}/paymentHistory/${tripDetailsx.rideID}');
-    
+
+
+
+    if(tripDetailsx.commissionedDriverId != ""){
+      if(tripDetailsx.commissionedDriverId.trim() != "system"){
+        Map commissionMap = {
+          'comValue':paymentDetails.commission,
+          'rideId': tripDetailsx.rideID,
+          'handled': false,
+        };
+        var refCommission = FirebaseDatabase.instance.reference().child("drivers/${tripDetailsx.commissionedDriverId}/commission").push();
+        refCommission.set(commissionMap);
+      }
+    }
+
     Map directionMap = {
+      'distanceText': directionDetailsGPS.distanceText.toString(),
+      'distanceValue': directionDetailsGPS.distanceValue.toString(),
+      'durationValue': directionDetailsGPS.durationValue.toString(),
+      'durationText': directionDetailsGPS.durationText.toString(),
+    };
+
+    Map directionMapGoogle = {
       'distanceText': directionDetails.distanceText.toString(),
       'distanceValue': directionDetails.distanceValue.toString(),
       'durationValue': directionDetails.durationValue.toString(),
@@ -1035,7 +1256,8 @@ class _NewTripPageState extends State<NewTripPage> {
       "destinationAddress": paymentDetails.destinationAddress,
       "pickupAddress": paymentDetails.pickupAddress,
       "date": DateTime.now().toString(),
-      "directionDetails": directionMap
+      "directionDetails": directionMap,
+      "directionDetailsGoogle": directionMapGoogle
     };
     earningsRef.set(paymentHistoryMap);
 
